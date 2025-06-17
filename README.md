@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Khaled El Gammal Front End
 
-## Getting Started
+Front-end for Khaled El Gammal platform, built with **Next.js 15**, **React 19**, and **Redux Toolkit**.  
+This project is the client-side for the Khaled El Gammal e-commerce/artisan platform, supporting user/admin authentication, product browsing, gallery, business/contact/customize forms, and more.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Features
+
+- **Modern Next.js 15 App Router**
+- **Redux Toolkit & RTK Query** for state management and API calls
+- **User & Admin Authentication** (JWT, cookies)
+- **Dynamic Product & Gallery Display**
+- **Business, Contact, and Customize Forms** (with validation & file upload)
+- **Responsive UI** with Tailwind CSS
+- **Toast Notifications** for user feedback
+- **Image Optimization** (Next.js Image)
+- **Loading & Error Handling**
+- **Clean, Modular Code Structure**
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── public/                  # Static assets (images, icons, etc.)
+├── src/
+│   └── app/
+│       ├── components/      # Reusable UI components (Nav1, Footer, Form, etc.)
+│       ├── features/Api/    # RTK Query API slices (AuthApi, galleryApi, etc.)
+│       ├── redux/           # Redux store and slices
+│       ├── pages/           # App pages (Gallery, login, signUp, etc.)
+│       └── utils/           # Utility functions (token handling, etc.)
+├── .env                     # Environment variables
+├── next.config.mjs          # Next.js config (image domains, etc.)
+├── package.json
+└── README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## ⚙️ Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+أنشئ ملف `.env` في الجذر:
 
-## Learn More
+```
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Installation & Run
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+git clone https://github.com/Abdallah-Wael10/khaled-El-gammal-Front-end-v1.git
+cd khaled-El-gammal-Front-end-v1
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+- The app runs on `http://localhost:3000` by default.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧩 Main Features
+
+- **Home Page:** Introduction, trending products, gallery slider, contact form.
+- **Gallery:** SSR + CSR gallery display with modal view.
+- **Products:** Dynamic product cards, add to cart, checkout.
+- **Forms:** Business, Contact, and Customize forms with validation and file/image upload.
+- **Authentication:** User & Admin login/register, token stored in cookies.
+- **Admin Dashboard:** Protected routes for admin management.
+- **Notifications:** User feedback via react-hot-toast.
+
+---
+
+## 🔒 Authentication
+
+- JWT tokens are stored in cookies using `js-cookie`.
+- Protected routes check for token presence and validity.
+
+---
+
+## 🖼️ Image Handling
+
+- Uses Next.js `<Image />` for optimized images.
+- Supports remote images from backend (`localhost:5000`).
+
+---
+
+## 📝 Validation
+
+- All forms have client-side validation for required fields, email, phone, etc.
+- Error messages are shown inline and via toast.
+
+---
+
+## 📦 Dependencies
+
+- **Next.js 15**
+- **React 19**
+- **Redux Toolkit**
+- **React Redux**
+- **RTK Query**
+- **js-cookie**
+- **react-hot-toast**
+- **Tailwind CSS**
+- **Swiper** (for sliders)
+
+---
+
+## 👨‍💻 Author
+
+- [Abdallah Wael](https://github.com/Abdallah-Wael10)
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+---
+
+**Feel free to fork, contribute, or open issues!**
