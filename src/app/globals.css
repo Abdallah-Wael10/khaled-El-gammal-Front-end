@@ -22,5 +22,72 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), sans-serif;
+}
+
+@layer components {
+  .bg-home {
+    background-image: url('/khaledbg.jpg');
+  }
+  .bg-star {
+    background-image: url('/star.png');
+  }
+}
+
+@layer utilities {
+  @keyframes slide-down {
+    0% {
+      opacity: 0;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    100% {
+      opacity: 1;
+      max-height: 600px; /* Adjust based on content size */
+      padding-top: 0.5rem;
+      padding-bottom: 1.5rem;
+    }
+  }
+
+  @keyframes slide-up {
+    0% {
+      opacity: 1;
+      max-height: 600px;
+      padding-top: 0.5rem;
+      padding-bottom: 1.5rem;
+    }
+    100% {
+      opacity: 0;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+  }
+
+  @keyframes spin-slow {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .details-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-in-out,
+      padding 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  details[open] .details-content {
+    animation: slide-down 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  details:not([open]) .details-content {
+    animation: slide-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 2s linear infinite;
+  }
 }
