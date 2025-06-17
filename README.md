@@ -1,4 +1,8 @@
-# Khaled El Gammal Front End
+# Khaled El Gammal Front End version 1
+
+ℹ️ **Note from developer:**  
+This project is still under development and currently reflects the first phase. More work is coming soon to finalize the production-ready version.
+
 
 Front-end for Khaled El Gammal platform, built with **Next.js 15**, **React 19**, and **Redux Toolkit**.  
 This project is the client-side for the Khaled El Gammal e-commerce/artisan platform, supporting user/admin authentication, product browsing, gallery, business/contact/customize forms, and more.
