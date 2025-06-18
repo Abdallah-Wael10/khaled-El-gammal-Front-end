@@ -9,7 +9,7 @@ This project is the client-side for the Khaled El Gammal e-commerce/artisan plat
 
 ---
 
-## 🚀 Features
+##  Features
 
 - **Modern Next.js 15 App Router**
 - **Redux Toolkit & RTK Query** for state management and API calls
@@ -67,7 +67,7 @@ npm run dev
 
 ---
 
-## 🧩 Main Features
+##  Main Features
 
 - **Home Page:** Introduction, trending products, gallery slider, contact form.
 - **Gallery:** SSR + CSR gallery display with modal view.
