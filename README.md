@@ -1,26 +1,25 @@
-# Khaled El Gammal Front End version 1
+# Khaled El Gammal Frontend
 
-ℹ️ **Note from developer:**  
-This project is still under development and currently reflects the first phase. More work is coming soon to finalize the production-ready version.
-
-
-Front-end for Khaled El Gammal platform, built with **Next.js 15**, **React 19**, and **Redux Toolkit**.  
-This project is the client-side for the Khaled El Gammal e-commerce/artisan platform, supporting user/admin authentication, product browsing, gallery, business/contact/customize forms, and more.
+A modern, production-ready e-commerce frontend for Khaled El Gamal, built with **Next.js 15**, **React 19**, **Redux Toolkit**, and **Tailwind CSS**.
 
 ---
 
-##  Features
+## 🚀 Features
 
-- **Modern Next.js 15 App Router**
-- **Redux Toolkit & RTK Query** for state management and API calls
-- **User & Admin Authentication** (JWT, cookies)
-- **Dynamic Product & Gallery Display**
-- **Business, Contact, and Customize Forms** (with validation & file upload)
-- **Responsive UI** with Tailwind CSS
+- **Next.js 15** with App Router, SSR & CSR support
+- **Tailwind CSS** for a clean, fully responsive UI
+- **Redux Toolkit** for global state management
+- **RTK Query** for efficient data fetching & mutations
+- **Add to Cart** with persistent cart (localStorage)
+- **Checkout** flow with validation and order summary
+- **Authentication** (JWT, cookies) for user/admin
+- **Dynamic Product Pages** with SSR/CSR
+- **Gallery & Forms** (Business, Contact, Customize)
+- **Admin Dashboard** for managing products, orders, users, and custom requests
+- **Optimized Images** using Next.js `<Image />`
 - **Toast Notifications** for user feedback
-- **Image Optimization** (Next.js Image)
-- **Loading & Error Handling**
-- **Clean, Modular Code Structure**
+- **Loading & Error Handling** everywhere
+- **Clean, modular, and scalable codebase**
 
 ---
 
@@ -31,10 +30,10 @@ This project is the client-side for the Khaled El Gammal e-commerce/artisan plat
 ├── public/                  # Static assets (images, icons, etc.)
 ├── src/
 │   └── app/
-│       ├── components/      # Reusable UI components (Nav1, Footer, Form, etc.)
-│       ├── features/Api/    # RTK Query API slices (AuthApi, galleryApi, etc.)
+│       ├── components/      # Reusable UI components (Nav1, Footer, Card, etc.)
+│       ├── features/Api/    # RTK Query API slices (ProductApi, CheckoutApi, etc.)
 │       ├── redux/           # Redux store and slices
-│       ├── pages/           # App pages (Gallery, login, signUp, etc.)
+│       ├── pages/           # App pages (Gallery, AboutUs, Checkout, etc.)
 │       └── utils/           # Utility functions (token handling, etc.)
 ├── .env                     # Environment variables
 ├── next.config.mjs          # Next.js config (image domains, etc.)
@@ -46,7 +45,7 @@ This project is the client-side for the Khaled El Gammal e-commerce/artisan plat
 
 ## ⚙️ Environment Variables
 
-أنشئ ملف `.env` في الجذر:
+Create a `.env` file in the root:
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:5000
@@ -63,26 +62,35 @@ npm install
 npm run dev
 ```
 
-- The app runs on `http://localhost:3000` by default.
+- The app runs on [http://localhost:3000](http://localhost:3000) by default.
 
 ---
 
-##  Main Features
+## 🧩 Main Features
 
-- **Home Page:** Introduction, trending products, gallery slider, contact form.
-- **Gallery:** SSR + CSR gallery display with modal view.
+- **Home Page:** Hero, trending products, gallery slider, contact form.
+- **Gallery:** SSR + CSR gallery with modal view.
 - **Products:** Dynamic product cards, add to cart, checkout.
-- **Forms:** Business, Contact, and Customize forms with validation and file/image upload.
+- **Forms:** Business, Contact, and Customize forms (with validation & file upload).
 - **Authentication:** User & Admin login/register, token stored in cookies.
 - **Admin Dashboard:** Protected routes for admin management.
 - **Notifications:** User feedback via react-hot-toast.
 
 ---
 
-## 🔒 Authentication
+## 🛒 Add to Cart & Checkout
 
-- JWT tokens are stored in cookies using `js-cookie`.
-- Protected routes check for token presence and validity.
+- Cart state is managed globally with Redux Toolkit and persisted in localStorage.
+- Add, remove, and update quantities from anywhere.
+- Checkout page with full validation, order summary, and payment method selection.
+- Orders are submitted via RTK Query mutation.
+
+---
+
+## 🔄 Data Fetching
+
+- **RTK Query** for all API calls (products, gallery, checkout, etc.)
+- **SSR/CSR**: Product and gallery pages support both server-side and client-side rendering for best performance and SEO.
 
 ---
 
@@ -100,23 +108,37 @@ npm run dev
 
 ---
 
-## 📦 Dependencies
+## 🧑‍💻 Tech Stack
 
 - **Next.js 15**
 - **React 19**
-- **Redux Toolkit**
-- **React Redux**
-- **RTK Query**
-- **js-cookie**
-- **react-hot-toast**
+- **Redux Toolkit** & **RTK Query**
 - **Tailwind CSS**
+- **Headless UI** (for modals)
+- **react-hot-toast**
 - **Swiper** (for sliders)
 
 ---
 
-## 👨‍💻 Author
+## 🛡️ Authentication
 
-- [Abdallah Wael](https://github.com/Abdallah-Wael10)
+- JWT tokens are stored in cookies using `js-cookie`.
+- Protected routes check for token presence and validity.
+- Admin dashboard is fully protected.
+
+---
+
+## 🧑‍💼 Admin Dashboard
+
+- Manage products, orders, users, gallery, and customize requests.
+- All admin pages are responsive and optimized for mobile/tablet/desktop.
+
+---
+
+## 📱 Responsive Design
+
+- 100% responsive on all screens (mobile, tablet, desktop).
+- Clean, modern, and accessible UI.
 
 ---
 
@@ -126,4 +148,10 @@ This project is licensed under the MIT License.
 
 ---
 
-**Feel free to fork, contribute, or open issues!**
+## 👨‍💻 Author
+
+- [Abdallah Wael](https://github.com/Abdallah-Wael10)
+
+---
+
+**Feel free to fork, contribute, or open
