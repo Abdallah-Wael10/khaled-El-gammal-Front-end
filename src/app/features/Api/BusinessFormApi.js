@@ -1,6 +1,6 @@
 // features/api/galleryApi.ts
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
+import { getAuthToken } from '@/app/utils/page';
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export const businessApi = createApi({
@@ -15,7 +15,7 @@ export const businessApi = createApi({
         endpoint === 'updateBusiness' ||
         endpoint === 'deleteBusiness'
       ) {
-        const token = typeof window !== "undefined" ? localStorage.getItem('token') : null;
+        const token = getAuthToken();
         if (token) headers.set('Authorization', `Bearer ${token}`);
       }
       return headers;

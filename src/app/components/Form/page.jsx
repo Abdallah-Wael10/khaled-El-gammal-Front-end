@@ -93,7 +93,7 @@ const Form = () => {
     <div className="w-[760px] h-max bg-white rounded-[23px] border border-gray-400 max-460:w-[94%] max-460:h-max">
       <div className="w-full h-max flex justify-center pb-5 items-center flex-col gap-5">
         <h1 className="text-[36px] text-[#FFCF67] font-black">Contact us</h1>
-        <p className="text-[24px] font-bold text-[#737373]">
+        <p className="text-[24px] font-bold text-[#737373] max-[900px]:text-[20px] text-center max-[321px]:text-[16px]">
           Get in touch with <span className="text-[#FFCF67]">Khaled El Gamal</span>
         </p>
       </div>

@@ -30,7 +30,7 @@ const Register = () => {
       const res = await register(form).unwrap();
       setAuthToken(res.token);
       toast.success("Registration successful!");
-      router.push("/");
+      router.push("/pages/login");
     } catch (err) {
       toast.error(err?.data?.message || "Registration failed");
     }

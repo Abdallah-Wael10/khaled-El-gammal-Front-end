@@ -1,11 +1,13 @@
 import React from 'react';
 import Nav1 from '@/app/components/Nav1/page';
 import Footer from '@/app/components/footer/page';
+import Cart from '@/app/components/Cart/page';
 
 const AboutUs = () => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
       <Nav1 />
+      <Cart />
       <main className="flex-1 flex flex-col items-center px-4 py-12 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <section className="w-full max-w-4xl mx-auto text-center bg-gradient-to-b from-white to-gray-100 rounded-xl shadow-lg p-10 mb-12">

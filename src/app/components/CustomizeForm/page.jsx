@@ -108,17 +108,17 @@ const CustomizeForm = () => {
   };
 
   return (
-    <div className="w-[760px] h-max bg-white rounded-[23px] border border-gray-400 max-460:w-[94%] max-460:h-max">
-      <div className="w-full h-max flex justify-center pb-5 items-center flex-col gap-5">
-        <p className="w-full h-max text-center pb-5 pt-5 text-[18px] font-normal text-[#737373]">
+    <div className="w-full max-w-[500px] md:max-w-[760px] mx-auto h-max bg-white rounded-[23px] border border-gray-400 px-2 md:px-6 py-6">
+      <div className="w-full h-max flex justify-center pb-5 items-center flex-col gap-4">
+        <p className="w-full h-max text-center pb-3 pt-3 text-[18px] font-normal text-[#737373] max-[500px]:text-[15px]">
           Upload images and tell us what you want. We'll help you make it real with <span className="text-[#FFCF67]">Khaled El Gamal</span>
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="pb-7 text-black" encType="multipart/form-data">
-        <div className="w-full flex flex-col items-center gap-[40px] px-4">
+      <form onSubmit={handleSubmit} className="pb-4 text-black" encType="multipart/form-data">
+        <div className="w-full flex flex-col items-center gap-6 md:gap-8">
           {/* Name Input */}
-          <div className="w-[80%] relative">
+          <div className="w-full relative">
             <label className="absolute -top-2.5 left-3 text-sm text-[#FFCF67] bg-white px-1">Name</label>
             <input
               type="text"
@@ -135,7 +135,7 @@ const CustomizeForm = () => {
           </div>
 
           {/* Phone Input */}
-          <div className="w-[80%] relative">
+          <div className="w-full relative">
             <label className="absolute -top-2.5 left-3 text-sm text-[#FFCF67] bg-white px-1">Phone</label>
             <input
               type="tel"
@@ -152,7 +152,7 @@ const CustomizeForm = () => {
           </div>
 
           {/* Email Input */}
-          <div className="w-[80%] relative">
+          <div className="w-full relative">
             <label className="absolute -top-2.5 left-3 text-sm text-[#FFCF67] bg-white px-1">Email</label>
             <input
               type="email"
@@ -169,7 +169,7 @@ const CustomizeForm = () => {
           </div>
 
           {/* Project Details */}
-          <div className="w-[80%] relative">
+          <div className="w-full relative">
             <label className="absolute -top-2.5 left-3 text-sm text-[#FFCF67] bg-white px-1">Comment</label>
             <textarea
               name="projectDetails"
@@ -186,11 +186,11 @@ const CustomizeForm = () => {
           </div>
 
           {/* Image Upload */}
-          <div className="w-[80%] relative flex flex-col items-center">
+          <div className="w-full relative flex flex-col items-center">
             <label className="block text-base text-[#FFCF67] font-semibold mb-2">
               Upload Inspiration Images (max 5)
             </label>
-            <span className="w-full h-max text-center text-[17px] pb-5 font-normal text-[#737373]">
+            <span className="w-full h-max text-center text-[17px] pb-3 font-normal text-[#737373] max-[500px]:text-[14px]">
               Add images that represent the style or design you want. Our team will use them to create your custom piece.
             </span>
             <label
@@ -213,7 +213,7 @@ const CustomizeForm = () => {
             </label>
             {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
             {preview.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-3">
+              <div className="mt-3 flex flex-wrap gap-3 justify-center">
                 {preview.map((img, idx) => (
                   <Image
                     key={idx}
@@ -233,7 +233,7 @@ const CustomizeForm = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-[80%] h-14 bg-[#FFCF67] text-white text-xl font-medium rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full md:w-[80%] h-14 bg-[#FFCF67] text-white text-xl font-medium rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Sending...' : 'Send'}
           </button>

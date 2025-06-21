@@ -1,16 +1,9 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAddBusinessMutation } from '@/app/features/Api/BusinessFormApi';
+import { useGetProductsQuery } from '@/app/features/Api/ProductApi';
 import Loading from '../loading/page';
 import { toast } from 'react-hot-toast';
-
-const ProductCategory = [
-  "Frame earthenware",
-  "Box with Stone",
-  "Table with Stone",
-  "Chess",
-  "Others",
-];
 
 const BusinessForm = () => {
   const [addBusiness, { isLoading }] = useAddBusinessMutation();
@@ -20,7 +13,7 @@ const BusinessForm = () => {
     email: '',
     projectDetails: '',
   });
-  const [selectedCategory, setSelectedCategory] = useState(ProductCategory[0]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [errors, setErrors] = useState({
     name: '',
     phone: '',
@@ -28,6 +21,15 @@ const BusinessForm = () => {
     projectDetails: '',
     category: '',
   });
+
+  // Fetch products
+  const { data: products = [], isLoading: productsLoading } = useGetProductsQuery();
+
+  // Extract unique categories from products
+  const categories = useMemo(() => {
+    const cats = products.map(p => p.category?.trim()).filter(Boolean);
+    return Array.from(new Set(cats));
+  }, [products]);
 
   const validateForm = () => {
     let isValid = true;
@@ -106,7 +108,7 @@ const BusinessForm = () => {
         email: '',
         projectDetails: '',
       });
-      setSelectedCategory(ProductCategory[0]);
+      setSelectedCategory('');
     } catch (error) {
       toast.error("Error: " + (error?.data?.message || "Please try again."), { id: toastId });
     }
@@ -116,10 +118,10 @@ const BusinessForm = () => {
     <div className="w-auto p-2 h-max bg-white rounded-[23px] border border-gray-400 max-460:w-[94%] max-460:h-max">
       <div className="w-full h-max flex justify-center pb-5 items-center flex-col gap-5">
         <h1 className="text-[36px] text-[#FFCF67] font-black">Contact us</h1>
-        <p className="text-[24px] font-bold text-[#737373]">
+        <p className="text-[24px] font-bold text-[#737373] max-[426px]:text-[17px]">
           Get in touch with <span className="text-[#FFCF67]">Khaled El Gamal</span>
         </p>
-        <p className='w-full h-max text-[#00000054] text-[20px] font-medium text-center'>
+        <p className='w-full h-max text-[#00000054] text-[20px] font-medium text-center max-[426px]:text-[15px]'>
           Tell us what product you need, and we'll get back to you within 24 hours
         </p>
       </div>
@@ -130,9 +132,12 @@ const BusinessForm = () => {
             className='w-[80%] p-2 rounded-[30px] text-[16px] font-semibold text-[#FFCF67] bg-white border border-[#FFCF67] shadow-sm transition-all duration-200 focus:outline-none focus:border-[#FFCF67] focus:ring-2 focus:ring-[#FFCF67]'
             value={selectedCategory}
             onChange={handleOptionChange}
-            disabled={isLoading}
+            disabled={isLoading || productsLoading}
           >
-            {ProductCategory.map((category, index) => (
+            <option value="" disabled hidden>
+              {productsLoading ? "Loading categories..." : "Select Category"}
+            </option>
+            {categories.map((category, index) => (
               <option className="bg-white text-black font-semibold text-center" key={index} value={category}>
                 {category}
               </option>

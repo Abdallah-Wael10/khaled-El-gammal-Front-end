@@ -5,6 +5,7 @@ import Loading from '@/app/components/loading/page';
 import Nav1 from '@/app/components/Nav1/page';
 import Image from 'next/image';
 import Footer from '@/app/components/footer/page';
+import Cart from '@/app/components/Cart/page';
 
 const GalleryClient = ({ initialGallery, initialError }) => {
   const [forceFetch, setForceFetch] = useState(false);
@@ -44,14 +45,23 @@ const GalleryClient = ({ initialGallery, initialError }) => {
     );
   }
 
+  if (!galleryData || galleryData.length === 0) {
+    return (
+      <div className="w-full min-h-[60vh] flex justify-center items-center bg-white">
+        <Loading />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#FFF8E1] min-h-screen flex flex-col">
       <Nav1 />
+      <Cart />
       <section className="w-full pt-10 pb-5 flex flex-col items-center bg-white">
-        <h1 className="text-[35px] text-[#FFCF67] font-extrabold text-center mb-2 tracking-tight">
+        <h1 className="text-[35px] text-[#FFCF67] font-extrabold text-center mb-2 tracking-tight max-[470px]:text-[30px]">
           Gallery Collection
         </h1>
-        <p className="text-[23px] font-normal text-[#919191] text-center mb-2">
+        <p className="text-[23px] font-normal text-[#919191] text-center mb-2 max-[470px]:text-[18px]">
           Explore our exquisite collection of handmade products.
         </p>
       </section>

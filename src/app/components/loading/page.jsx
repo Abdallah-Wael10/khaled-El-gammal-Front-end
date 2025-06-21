@@ -12,7 +12,7 @@ const Loading = () => {
             alt="Loading"
             width={80}
             height={80}
-            className="drop-shadow-lg"
+            className="drop-shadow-lg w-auto h-auto"
             priority
           />
         </span>

@@ -27,8 +27,15 @@ const AdminLogin = () => {
     try {
       const res = await adminLogin({ email, password }).unwrap();
       setAuthToken(res.token);
-      toast.success("Login successful!");
-      router.push("/Adminn/dashh");
+      // Decode token to get role (client-side only, for UI logic)
+      const payload = JSON.parse(atob(res.token.split(".")[1]));
+      if (payload.role === "admin") {
+        localStorage.setItem("role", "admin");
+        toast.success("Login successful!");
+        router.push("/Adminn/dashh");
+      } else {
+        toast.error("You are not admin!");
+      }
     } catch (err) {
       toast.error(err?.data?.message || "Login failed");
     }
