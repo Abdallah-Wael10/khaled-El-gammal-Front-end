@@ -23,6 +23,56 @@ A modern, production-ready e-commerce frontend for Khaled El Gamal, built with *
 
 ---
 
+## 📈 SEO & Meta Tags
+
+### Professional SEO Implementation
+
+This project is built with **SEO best practices** in mind, leveraging Next.js App Router's advanced metadata system for both static and dynamic pages:
+
+- **Global Meta Tags:**  
+  The root [`layout.js`](src/app/layout.js) exports a `metadata` object with default `<title>`, `<meta name="description">`, Open Graph, Twitter Card, and favicon for the whole site.
+
+- **Static Pages:**  
+  Every static page (like About Us, Contact Us, Business, Customize, Gallery, Shop) exports its own `metadata` object with a unique title, description, keywords, and Open Graph image.  
+  Example:
+  ```js
+  // AboutUs/page.jsx
+  export const metadata = {
+    title: "About Us | Khaled El Gamal",
+    description: "Learn about Khaled El Gamal's journey, values, and commitment to authentic Egyptian craftsmanship.",
+    keywords: "About Khaled El Gamal, Egyptian Artisans, Handmade, Khan El Khalili",
+    openGraph: { ... }
+  };
+  ```
+
+- **Dynamic Pages:**  
+  Dynamic pages (like product details) use `export async function generateMetadata({ params })` to fetch product data and generate SEO meta tags dynamically, including Open Graph and Twitter images for each product.
+  ```js
+  // productById/[id]/page.jsx
+  export async function generateMetadata({ params }) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${params.id}`);
+    const product = await res.json();
+    return {
+      title: `${product.title} | Khaled El Gamal`,
+      description: product.description,
+      openGraph: { ... }
+    };
+  }
+  ```
+
+- **Open Graph & Social Sharing:**  
+  All pages include rich Open Graph and Twitter Card tags for beautiful sharing previews on social media.
+
+- **Accessibility & Best Practices:**  
+  - All images have descriptive `alt` attributes.
+  - Only one `<h1>` per page.
+  - Canonical URLs and robots meta are set for search engines.
+
+- **SSR/CSR:**  
+  Product and gallery pages support both SSR and CSR for optimal SEO and performance.
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -90,7 +140,7 @@ npm run dev
 ## 🔄 Data Fetching
 
 - **RTK Query** for all API calls (products, gallery, checkout, etc.)
-- **SSR/CSR**: Product and gallery pages support both server-side and client-side rendering for best performance and SEO.
+- **SSR/CSR:** Product and gallery pages support both server-side and client-side rendering for best performance and SEO.
 
 ---
 
@@ -154,4 +204,4 @@ This project is licensed under the MIT License.
 
 ---
 
-**Feel free to fork, contribute, or open
+**Feel
