@@ -7,6 +7,28 @@ import Image from 'next/image';
 import Footer from '@/app/components/footer/page';
 import Cart from '@/app/components/Cart/page';
 
+export const metadata = {
+  title: "Gallery | Khaled El Gamal",
+  description: "Explore the gallery collection of Khaled El Gamal. Unique handmade Egyptian art and decor.",
+  keywords: "Gallery, Khaled El Gamal, Handmade, Egyptian Art, Decor",
+  openGraph: {
+    title: "Gallery | Khaled El Gamal",
+    description: "Explore the gallery collection of Khaled El Gamal. Unique handmade Egyptian art and decor.",
+    url: "https://your-domain.com/pages/Gallery",
+    siteName: "Khaled El Gamal",
+    images: [
+      {
+        url: "https://your-domain.com/khaledbg.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Gallery Khaled El Gamal",
+      },
+    ],
+    locale: "en_US",
+    type: "article",
+  },
+};
+
 const GalleryClient = ({ initialGallery, initialError }) => {
   const [forceFetch, setForceFetch] = useState(false);
 

@@ -3,6 +3,27 @@ import Nav1 from '@/app/components/Nav1/page';
 import Footer from '@/app/components/footer/page';
 import Cart from '@/app/components/Cart/page';
 
+export const metadata = {
+  title: "About Us | Khaled El Gamal",
+  description: "Learn about Khaled El Gamal's journey, values, and commitment to authentic Egyptian craftsmanship.",
+  keywords: "About Khaled El Gamal, Egyptian Artisans, Handmade, Khan El Khalili",
+  openGraph: {
+    title: "About Us | Khaled El Gamal",
+    description: "Learn about Khaled El Gamal's journey, values, and commitment to authentic Egyptian craftsmanship.",
+    url: "https://your-domain.com/pages/AboutUs",
+    siteName: "Khaled El Gamal",
+    images: [
+      {
+        url: "https://your-domain.com/khaledbg.jpg",
+        width: 1200,
+        height: 630,
+        alt: "About Khaled El Gamal",
+      },
+    ],
+    locale: "en_US",
+    type: "article",
+  },
+};
 const AboutUs = () => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">

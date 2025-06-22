@@ -31,7 +31,7 @@ export default function Home() {
           The Power Of Creativity
         </h1>
         <div className="w-[13%] h-max p-3 bg-[#01010166] rounded-[22px] flex items-center justify-center gap-5 mt-4 max-[600px]:w-[45%] max-[900px]:w-[25%]  max-[1439px]:w-[21%] ">
-          <a href="http://" target="_blank" rel="noopener noreferrer">
+          <a href="tel:+201159227861" target="_blank" rel="noopener noreferrer">
             <Image
               src={wp}
               alt="whatsapp"

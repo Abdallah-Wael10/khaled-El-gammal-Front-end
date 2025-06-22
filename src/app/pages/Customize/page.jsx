@@ -4,6 +4,28 @@ import Footer from '@/app/components/footer/page'
 import CustomizeForm from '@/app/components/CustomizeForm/page'
 import Cart from '@/app/components/Cart/page';
 
+export const metadata = {
+  title: "Customize | Khaled El Gamal",
+  description: "Customize your dream design with Khaled El Gamal. Share your vision and let us craft it for you.",
+  keywords: "Customize, Custom Design, Handmade, Khaled El Gamal, Egyptian Art",
+  openGraph: {
+    title: "Customize | Khaled El Gamal",
+    description: "Customize your dream design with Khaled El Gamal. Share your vision and let us craft it for you.",
+    url: "https://your-domain.com/pages/Customize",
+    siteName: "Khaled El Gamal",
+    images: [
+      {
+        url: "https://your-domain.com/khaledbg.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Customize Khaled El Gamal",
+      },
+    ],
+    locale: "en_US",
+    type: "article",
+  },
+};
+
 const Customize = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white">

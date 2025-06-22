@@ -19,6 +19,41 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Dialog, Transition } from "@headlessui/react";
 
+export async function generateMetadata({ params }) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${params.id}`, { cache: "no-store" });
+  if (!res.ok) {
+    return {
+      title: "Product Not Found | Khaled El Gamal",
+      description: "This product does not exist.",
+    };
+  }
+  const product = await res.json();
+  return {
+    title: `${product.title} | Khaled El Gamal`,
+    description: product.description || "Discover unique handmade Egyptian art.",
+    openGraph: {
+      title: `${product.title} | Khaled El Gamal`,
+      description: product.description || "Discover unique handmade Egyptian art.",
+      url: `https://your-domain.com/pages/productById/${params.id}`,
+      images: [
+        {
+          url: `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`,
+          width: 1200,
+          height: 630,
+          alt: product.title,
+        },
+      ],
+      type: "product",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} | Khaled El Gamal`,
+      description: product.description || "Discover unique handmade Egyptian art.",
+      images: [`${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`],
+    },
+  };
+}
+
 const ProductById = () => {
   const { data: Products = [], isLoading: isLoadingProducts } = useGetProductsQuery();
   const { id } = useParams();

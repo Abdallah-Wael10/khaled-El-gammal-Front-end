@@ -10,6 +10,28 @@ import quality from "./images/quality.svg"
 import BusinessForm from '@/app/components/BusinessForm/page'
 import Cart from '@/app/components/Cart/page';
 
+export const metadata = {
+  title: "Business | Khaled El Gamal",
+  description: "Special rates and offers for business owners. Partner with Khaled El Gamal for unique handmade products.",
+  keywords: "Business, Wholesale, Special Rates, Khaled El Gamal, Handmade, Partnership",
+  openGraph: {
+    title: "Business | Khaled El Gamal",
+    description: "Special rates and offers for business owners. Partner with Khaled El Gamal for unique handmade products.",
+    url: "https://your-domain.com/pages/Business",
+    siteName: "Khaled El Gamal",
+    images: [
+      {
+        url: "https://your-domain.com/khaledbg.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Business Khaled El Gamal",
+      },
+    ],
+    locale: "en_US",
+    type: "article",
+  },
+};
+
 const Business = () => {
   return (
     <main className='bg-white'>

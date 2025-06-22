@@ -8,6 +8,28 @@ import Footer from '@/app/components/footer/page';
 import Card from '@/app/components/Card/page';
 import Loading from '@/app/components/loading/page';
 import Cart from '@/app/components/Cart/page';
+
+export const metadata = {
+  title: "Shop | Khaled El Gamal",
+  description: "Shop unique handmade Egyptian products from Khaled El Gamal. Discover our latest collection.",
+  keywords: "Shop, Khaled El Gamal, Handmade, Egyptian Art, Buy, Products",
+  openGraph: {
+    title: "Shop | Khaled El Gamal",
+    description: "Shop unique handmade Egyptian products from Khaled El Gamal. Discover our latest collection.",
+    url: "https://your-domain.com/pages/shop",
+    siteName: "Khaled El Gamal",
+    images: [
+      {
+        url: "https://your-domain.com/khaledbg.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Shop Khaled El Gamal",
+      },
+    ],
+    locale: "en_US",
+    type: "article",
+  },
+};
 const ShopClient = ({ initialProducts = [], initialError }) => {
   // استخدم البيانات الجاية من السيرفر فقط
   const products = initialProducts;
