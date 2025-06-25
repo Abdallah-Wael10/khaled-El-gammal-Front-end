@@ -5,11 +5,15 @@ import Link from 'next/link'
 import { useSelector, useDispatch } from "react-redux";
 import { removeFromCart, updateQuantity, clearCart, closeCart } from "@/app/redux/slices/cartSlice";
 import goldKey from "./images/goldkey.svg"
+import { useGetShippingQuery } from "@/app/features/Api/ShippingApi";
 
 const Cart = () => {
+  // 🟢 كل الـ hooks هنا فقط
   const dispatch = useDispatch();
   const {items, isCartOpen } = useSelector((state) => state.cart);
+  const { data: shippingData, isLoading: shippingLoading } = useGetShippingQuery();
 
+  // 🟢 لا تضع أي hook بعد return أو شرط
   if (!isCartOpen) return null;
 
   // subtotal بالخصم لو موجود
@@ -21,6 +25,8 @@ const Cart = () => {
         : item.price * item.quantity),
     0
   );
+
+  const shippingCost = shippingData?.shippingCost ?? 0;
 
   return (
     <div className="fixed top-0 right-0 z-50 w-full max-w-md min-h-screen bg-white text-black rounded-l-2xl shadow-2xl flex flex-col transition-transform duration-300 animate-slide-in">
@@ -106,11 +112,15 @@ const Cart = () => {
           </div>
           <div className="flex justify-between text-base">
             <span>Shipping</span>
-            <span>100 LE</span>
+            <span>
+              {shippingLoading ? "..." : shippingCost === 0 ? "Free Shipping" : `${shippingCost} LE`}
+            </span>
           </div>
           <div className="flex justify-between text-xl font-bold text-[#FFCF67]">
             <span>Total</span>
-            <span>{subtotal + 100} LE</span>
+            <span>
+              {shippingLoading ? "..." : subtotal + (shippingCost || 0)} LE
+            </span>
           </div>
           <div className="flex gap-2 mt-4">
             <Link

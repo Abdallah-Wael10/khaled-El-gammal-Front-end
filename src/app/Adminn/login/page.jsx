@@ -101,6 +101,12 @@ const AdminLogin = () => {
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
+          {/* forget password */}
+          <div className="text-sm text-gray-600 text-center mt-4">
+            <a href="/Adminn/forgotPassword" className="hover:underline">
+              Forgot your password?
+            </a>
+          </div>
         </form>
       </div>
     </div>

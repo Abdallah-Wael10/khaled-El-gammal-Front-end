@@ -21,6 +21,20 @@ export const authApi = createApi({
         body,
       }),
     }),
+    userForgotPassword: builder.mutation({
+      query: (body) => ({
+        url: '/users/forgot-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+    userResetPassword: builder.mutation({
+      query: (body) => ({
+        url: '/users/reset-password',
+        method: 'POST',
+        body,
+      }),
+    }),
     // Admin
     adminRegister: builder.mutation({
       query: (body) => ({
@@ -36,12 +50,31 @@ export const authApi = createApi({
         body,
       }),
     }),
+    adminForgotPassword: builder.mutation({
+      query: (body) => ({
+        url: '/admin/forgot-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+    adminResetPassword: builder.mutation({
+      query: (body) => ({
+        url: '/admin/reset-password',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
+// export them
 export const {
   useUserRegisterMutation,
   useUserLoginMutation,
   useAdminRegisterMutation,
   useAdminLoginMutation,
+  useUserForgotPasswordMutation,
+  useUserResetPasswordMutation,
+  useAdminForgotPasswordMutation,
+  useAdminResetPasswordMutation,
 } = authApi;

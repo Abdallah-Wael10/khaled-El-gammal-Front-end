@@ -5,6 +5,12 @@ import { getAuthToken } from "@/app/utils/page";
 import { useRouter } from "next/navigation";
 import Loading from "@/app/components/loading/page";
 import {
+  useGetShippingQuery,
+  useCreateShippingMutation,
+  useUpdateShippingMutation,
+  useDeleteShippingMutation,
+} from "@/app/features/Api/ShippingApi";
+import {
   useGetProductsQuery,
   useAddProductMutation,
   useUpdateProductMutation,
@@ -44,6 +50,15 @@ const Products = () => {
   const [addProductImage] = useAddProductImageMutation();
   const [replaceProductImage] = useReplaceProductImageMutation();
   const [deleteProductImage] = useDeleteProductImageMutation();
+
+  const {
+    data: shippingData,
+    isLoading: shippingLoading,
+    refetch: refetchShipping,
+  } = useGetShippingQuery();
+  const [createShipping] = useCreateShippingMutation();
+  const [updateShipping] = useUpdateShippingMutation();
+  const [deleteShipping] = useDeleteShippingMutation();
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -193,6 +208,7 @@ if (form.sizes.length === 0) {
   // Filter/Search state
   const [search, setSearch] = useState("");
   const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [shippingInput, setShippingInput] = useState("");
 
   // Filtered products
   const filteredProducts = (products || []).filter(product => {
@@ -529,6 +545,59 @@ if (form.sizes.length === 0) {
             </div>
           </Dialog>
         </Transition>
+        {/* Shipping Section */}
+        <div className="mb-8 p-4 bg-white rounded-xl shadow flex flex-col md:flex-row items-center gap-4">
+          <span className="font-bold text-[#FFCF67]">Shipping Cost:</span>
+          <span>
+            {shippingLoading
+              ? "Loading..."
+              : shippingData
+              ? (shippingData.shippingCost === 0 ? "Free Shipping" : `${shippingData.shippingCost} LE`)
+              : "Not Set"}
+          </span>
+          <input
+            type="number"
+            min={0}
+            placeholder="Set Shipping Cost"
+            value={shippingInput}
+            onChange={e => setShippingInput(e.target.value)}
+            className="border p-2 rounded"
+          />
+          {shippingData ? (
+            <>
+              <button
+                className="bg-[#FFCF67] text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  await updateShipping({ shippingCost: Number(shippingInput) });
+                  setShippingInput("");
+                  refetchShipping();
+                }}
+              >
+                Update
+              </button>
+              <button
+                className="bg-red-400 text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  await deleteShipping();
+                  refetchShipping();
+                }}
+              >
+                Delete
+              </button>
+            </>
+          ) : (
+            <button
+              className="bg-[#FFCF67] text-white px-4 py-2 rounded"
+              onClick={async () => {
+                await createShipping({ shippingCost: Number(shippingInput) });
+                setShippingInput("");
+                refetchShipping();
+              }}
+            >
+              Add
+            </button>
+          )}
+        </div>
       </main>
 
     </div>

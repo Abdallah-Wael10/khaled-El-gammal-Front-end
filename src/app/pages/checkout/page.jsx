@@ -7,9 +7,7 @@ import { toast } from "react-hot-toast";
 import Nav1 from "@/app/components/Nav1/page";
 import Footer from "@/app/components/footer/page";
 import Image from "next/image";
-
-
-const SHIPPING_COST = 100;
+import { useGetShippingQuery } from "@/app/features/Api/ShippingApi";
 
 const CheckOut = () => {
   const [createCheckout, { isLoading }] = useCreateCheckoutMutation();
@@ -26,6 +24,8 @@ const CheckOut = () => {
   });
   const dispatch = useDispatch();
   const [hydrated, setHydrated] = useState(false);
+  const { data: shippingData, isLoading: shippingLoading } = useGetShippingQuery();
+  const shippingCost = typeof shippingData?.shippingCost === "number" ? shippingData.shippingCost : 0;
 
   useEffect(() => {
     setHydrated(true);
@@ -40,7 +40,9 @@ const CheckOut = () => {
         : item.price * item.quantity),
     0
   );
-  const total = subtotal + SHIPPING_COST;
+
+  // احسب التوتال بشكل آمن مع الشحن
+  const total = subtotal + (shippingLoading ? 0 : (shippingCost || 0));
 
   const handleChange = (e) => setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
 
@@ -56,12 +58,10 @@ const CheckOut = () => {
         items: cart.map(item => ({
           productId: item.id,
           title: item.title,
-          // price to be sent is the actual price used (discountPrice if exists)
           price: item.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.price,
           mainImage: item.mainImage,
           quantity: item.quantity,
           size: item.size,
-          // send original price and discountPrice for reference if you want
           originalPrice: item.price,
           discountPrice: item.discountPrice,
         })),
@@ -281,11 +281,21 @@ const CheckOut = () => {
                   </div>
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Shipping</span>
-                    <span>{SHIPPING_COST} LE</span>
+                    <span>
+                      {shippingLoading
+                        ? "..."
+                        : shippingCost === 0
+                        ? "Free Shipping"
+                        : `${shippingCost} LE`}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xl font-bold text-[#FFCF67]">
                     <span>Total</span>
-                    <span>{total} LE</span>
+                    <span>
+                      {shippingLoading
+                        ? "..."
+                        : `${subtotal + (typeof shippingCost === "number" ? shippingCost : 0)} LE`}
+                    </span>
                   </div>
                 </div>
               </>
@@ -295,6 +305,7 @@ const CheckOut = () => {
       </main>
       <Footer />
     </div>
+
   );
 };
 

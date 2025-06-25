@@ -112,6 +112,15 @@ const Login = () => {
             </a>
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
+            Forget Your Password?{" "}
+            <a
+              href="/pages/forgotPassword"
+              className="text-[#FFCF67] hover:underline"
+            >
+              Reset it here
+            </a>
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
             go back to{" "}
             <a href="/" className="text-[#FFCF67] hover:underline">
               Home

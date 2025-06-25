@@ -12,6 +12,7 @@ const Register = () => {
   const router = useRouter();
 
   const validate = () => {
+    //
     const errs = {};
     if (!form.fullName.trim()) errs.fullName = "Full name is required";
     if (!/^\S+@\S+\.\S+$/.test(form.email)) errs.email = "Valid email is required";
@@ -32,7 +33,14 @@ const Register = () => {
       toast.success("Registration successful!");
       router.push("/pages/login");
     } catch (err) {
-      toast.error(err?.data?.message || "Registration failed");
+      // هنا اعرض رسالة الخطأ من السيرفر
+      if (err?.data?.message === "Full name already used before") {
+        setErrors({ fullName: "Your full name is used before" });
+      } else if (err?.data?.message === "Email already exists") {
+        setErrors({ email: "This email is already registered" });
+      } else {
+        toast.error(err?.data?.message || "Registration failed");
+      }
     }
   };
 

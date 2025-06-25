@@ -1,46 +1,47 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getAuthToken } from "@/app/utils/page";
+import { useGetProductsQuery } from "@/app/features/Api/ProductApi";
+import { useGetAllCheckoutsQuery } from "@/app/features/Api/CheckoutApi";
 import Loading from "@/app/components/loading/page";
 import Nav2 from "@/app/components/Nav2/page";
 import Link from "next/link";
 
-const stats = [
-  {
-    title: "Total Products",
-    value: "—",
-    link: "/Adminn/Products",
-    color: "bg-gradient-to-r from-[#FFCF67] to-[#FFD96B]",
-    icon: "📦",
-  },
-  {
-    title: "Total Orders",
-    value: "—",
-    link: "/Adminn/Orders",
-    color: "bg-white",
-    icon: "🧾",
-  },
-  {
-    title: "Total Users",
-    value: "—",
-    link: "/Adminn/users",
-    color: "bg-gradient-to-r from-[#FFCF67] to-[#FFB300]",
-    icon: "👤",
-  },
-  
-];
-
 const Dashboard = () => {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
+  const [usersCount, setUsersCount] = useState(null);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
+  const { data: products = [], isLoading: loadingProducts } = useGetProductsQuery();
+  const { data: checkouts = [], isLoading: loadingCheckouts } = useGetAllCheckoutsQuery();
+
+  // Fetch users count
+  useEffect(() => {
+    const fetchUsersCount = async () => {
+      const Token = getAuthToken();
+      try {
+        const response = await fetch(`${baseUrl}/api/users`, {
+          headers: {
+            Authorization: `Bearer ${Token}`,
+          },
+        });
+        const data = await response.json();
+        setUsersCount(Array.isArray(data) ? data.length : (data.count || 0));
+      } catch {
+        setUsersCount(0);
+      }
+    };
+    fetchUsersCount();
+  }, [baseUrl]);
+
+  // Auth check
   useEffect(() => {
     const token = getAuthToken();
     let role = null;
     if (token) {
       try {
-        // Decode JWT payload to get role
         const payload = JSON.parse(atob(token.split(".")[1]));
         role = payload.role;
       } catch {
@@ -52,6 +53,31 @@ const Dashboard = () => {
     }
     setChecking(false);
   }, [router]);
+
+  // Memoized stats for clean code
+  const stats = useMemo(() => [
+    {
+      title: "Total Products",
+      value: loadingProducts ? "..." : products.length,
+      link: "/Adminn/Products",
+      color: "bg-gradient-to-r from-[#FFCF67] to-[#FFD96B]",
+      icon: "📦",
+    },
+    {
+      title: "Total Orders",
+      value: loadingCheckouts ? "..." : checkouts.length,
+      link: "/Adminn/Orders",
+      color: "bg-white",
+      icon: "🧾",
+    },
+    {
+      title: "Total Users",
+      value: usersCount === null ? "..." : usersCount,
+      link: "/Adminn/users",
+      color: "bg-gradient-to-r from-[#FFCF67] to-[#FFB300]",
+      icon: "👤",
+    },
+  ], [products, loadingProducts, checkouts, loadingCheckouts, usersCount]);
 
   if (checking) return <Loading />;
 
@@ -68,7 +94,7 @@ const Dashboard = () => {
         </p>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12 ">
-          {stats.map((stat, idx) => (
+          {stats.map((stat) => (
             <Link
               key={stat.title}
               href={stat.link}
@@ -98,7 +124,6 @@ const Dashboard = () => {
               <li>
                 <b>Gallery:</b> Manage images and media for the store.
               </li>
-
             </ul>
           </div>
         </div>

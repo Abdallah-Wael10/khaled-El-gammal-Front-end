@@ -19,6 +19,18 @@ import { useGetProductsQuery } from "./features/Api/ProductApi";
 export default function Home() {
   const { data: Products = [], isLoading } = useGetProductsQuery();
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  // Shuffle function
+  function shuffle(array) {
+    return array
+      .map((value) => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+  }
+
+  // Get 4 random products
+  const randomProducts = shuffle(Products).slice(0, 4);
+
   return (
     <main>
       <Nav1 />
@@ -123,7 +135,7 @@ export default function Home() {
         </div>
       </section>
       <section className="w-full h-max bg-white pt-5 pb-5 flex justify-center items-center gap-10 flex-wrap">
-        {Products.map((product) => (
+        {randomProducts.map((product) => (
           <Card
             key={product._id}
             id={product._id}

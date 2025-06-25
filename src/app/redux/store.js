@@ -8,6 +8,7 @@ import { productApi } from '@/app/features/Api/ProductApi';
 import cartReducer from './slices/cartSlice';
 import checkoutReducer from './slices/checkoutSlice';
 import { checkoutApi } from '../features/Api/CheckoutApi';
+import { shippingApi } from '../features/Api/ShippingApi';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [productApi.reducerPath]: productApi.reducer,
     [checkoutApi.reducerPath]: checkoutApi.reducer,
+    [shippingApi.reducerPath]: shippingApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -29,6 +31,7 @@ export const store = configureStore({
       customizeApi.middleware,
       authApi.middleware,
       productApi.middleware,
-      checkoutApi.middleware
+      checkoutApi.middleware,
+      shippingApi.middleware
     ),
 });
