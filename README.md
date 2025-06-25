@@ -1,6 +1,6 @@
 # Khaled El Gammal Frontend
 
-A modern, production-ready e-commerce frontend for Khaled El Gamal, built with **Next.js 15**, **React 19**, **Redux Toolkit**, and **Tailwind CSS**.
+A modern, production-ready e-commerce frontend for Khaled El Gamal, built with **Next.js 15**, **React 19**, **Redux Toolkit**, and **Tailwind CSS**. 
 
 ---
 
