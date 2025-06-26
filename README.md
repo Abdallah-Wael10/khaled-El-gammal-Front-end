@@ -21,7 +21,15 @@ A modern, production-ready e-commerce frontend for Khaled El Gamal, built with *
 - **Loading & Error Handling** everywhere
 - **Clean, modular, and scalable codebase**
 
----
+--- 
+## 📊 Lighthouse Score
+
+![Lighthouse Score](./public/khaledTest.png)
+
+- **Performance:** 99  
+- **Accessibility:** 96  
+- **Best Practices:** 100  
+- **SEO:** 100 
 
 ## 📈 SEO & Meta Tags
 
