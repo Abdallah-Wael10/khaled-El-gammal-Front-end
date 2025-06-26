@@ -11,11 +11,11 @@ export const metadata = {
   openGraph: {
     title: "Contact Us | Khaled El Gamal",
     description: "Contact Khaled El Gamal for inquiries, support, or custom orders. We're here to help you.",
-    url: "https://your-domain.com/pages/ContactUs",
+    url: "http://localhost:3000/pages/ContactUs",
     siteName: "Khaled El Gamal",
     images: [
       {
-        url: "https://your-domain.com/khaledbg.jpg",
+        url: "http://localhost:3000/khaledbg.webp",
         width: 1200,
         height: 630,
         alt: "Contact Khaled El Gamal",

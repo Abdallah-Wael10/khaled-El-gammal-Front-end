@@ -39,9 +39,9 @@ export default function Home() {
         <h1 className=" w-full h-max text-[48px] font-extrabold text-center text-white [text-shadow:2px_2px_19px_#F9E18BD1] max-[900px]:text-[20px]">
           KHALED EL GAMAL
         </h1>
-        <h1 className=" w-full h-max text-[48px] font-extrabold text-center text-white  [text-shadow:2px_2px_19px_#F9E18BD1] max-[900px]:text-[20px]">
+        <h2 className=" w-full h-max text-[48px] font-extrabold text-center text-white  [text-shadow:2px_2px_19px_#F9E18BD1] max-[900px]:text-[20px]">
           The Power Of Creativity
-        </h1>
+        </h2>
         <div className="w-[13%] h-max p-3 bg-[#01010166] rounded-[22px] flex items-center justify-center gap-5 mt-4 max-[600px]:w-[45%] max-[900px]:w-[25%]  max-[1439px]:w-[21%] ">
           <a href="tel:+201159227861" target="_blank" rel="noopener noreferrer">
             <Image
@@ -52,7 +52,7 @@ export default function Home() {
               className=""
             />
           </a>
-          <a href="http://" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
             <Image
               src={insta}
               alt="instagram"
@@ -61,7 +61,7 @@ export default function Home() {
               className=""
             />
           </a>
-          <a href="http://" target="_blank" rel="noopener noreferrer">
+          <a href="https://www.facebook.com/?locale=ar_AR" target="_blank" rel="noopener noreferrer">
             <Image
               src={facebook}
               alt="facebook"
@@ -95,9 +95,9 @@ export default function Home() {
           <span className="w-full h-max text-[#BCBCBC] text-[24px] font-normal text-center">
             Who we are
           </span>
-          <h1 className="w-full h-max text-[36px] text-[#FFCF67] font-semibold text-center max-[900px]:text-[29px]">
+          <h2 className="w-full h-max text-[36px] text-[#FFCF67] font-semibold text-center max-[900px]:text-[29px]">
             KHA<span className="text-[#CFA854]">LED EL G</span>AMAL
-          </h1>
+          </h2>
           <p className="w-full h-max text-center text-[16px] text-black font-normal">
             Khaled El Gammal - 19 Years of Artistic Excellence With over 19
             years of experience, Khaled El Gammal is a distinguished destination
@@ -126,9 +126,9 @@ export default function Home() {
           <Image src={draw} alt="draw icon" priority />
         </div>
         <div className="w-[34%] h-max flex min-h-[238px] justify-center items-center max-[900px]:w-full">
-          <h1 className="w-full text-[36px] font-semibold text-[#FFCF67] text-center">
+          <h2 className="w-full text-[36px] font-semibold text-[#FFCF67] text-center">
             Trending Product
-          </h1>
+          </h2>
         </div>
         <div className="w-[33%] h-max max-[900px]:hidden">
           <Image src={draw} alt="draw icon" priority />
@@ -160,9 +160,9 @@ export default function Home() {
       </section>
       <section className="w-full h-max pb-5 flex flex-col gap-5 bg-white">
         <div className="w-full h-max pt-5 pl-5 ">
-          <h1 className="w-full h-max  text-[32px] font-semibold text-[#FFCF67]">
+          <h2 className="w-full h-max  text-[32px] font-semibold text-[#FFCF67]">
             Gallery Collection
-          </h1>
+          </h2>
         </div>
         <div className="w-full h-max flex justify-center items-center">
           <GallerySlider />

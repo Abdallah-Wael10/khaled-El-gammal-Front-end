@@ -16,11 +16,11 @@ export const metadata = {
   openGraph: {
     title: "Shop | Khaled El Gamal",
     description: "Shop unique handmade Egyptian products from Khaled El Gamal. Discover our latest collection.",
-    url: "https://your-domain.com/pages/shop",
+    url: "http://localhost:3000/pages/shop",
     siteName: "Khaled El Gamal",
     images: [
       {
-        url: "https://your-domain.com/khaledbg.jpg",
+        url: "http://localhost:3000/khaledbg.webp",
         width: 1200,
         height: 630,
         alt: "Shop Khaled El Gamal",

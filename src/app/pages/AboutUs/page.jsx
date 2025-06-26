@@ -10,11 +10,11 @@ export const metadata = {
   openGraph: {
     title: "About Us | Khaled El Gamal",
     description: "Learn about Khaled El Gamal's journey, values, and commitment to authentic Egyptian craftsmanship.",
-    url: "https://your-domain.com/pages/AboutUs",
+    url: "http://localhost:3000/pages/AboutUs",
     siteName: "Khaled El Gamal",
     images: [
       {
-        url: "https://your-domain.com/khaledbg.jpg",
+        url: "http://localhost:3000/khaledbg.webp",
         width: 1200,
         height: 630,
         alt: "About Khaled El Gamal",
@@ -24,6 +24,8 @@ export const metadata = {
     type: "article",
   },
 };
+
+
 const AboutUs = () => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">

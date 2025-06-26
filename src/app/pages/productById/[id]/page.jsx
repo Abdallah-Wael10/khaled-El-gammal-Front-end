@@ -40,7 +40,6 @@ export async function generateMetadata(props) {
   };
 }
 
-// هنا خلي الكومبوننت async واعمل await للـ params
 const ProductById = async ({ params }) => {
   if (typeof params.then === "function") {
     params = await params;

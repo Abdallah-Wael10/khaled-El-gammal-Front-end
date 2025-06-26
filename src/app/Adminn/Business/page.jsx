@@ -124,12 +124,29 @@ const BusinessAdmin = () => {
               </button>
               <h3 className="text-xl font-bold text-[#2B2201] mb-2">Lead Details</h3>
               {selectedLead && (
-                <div className="space-y-2">
-                  <div><b>Name:</b> {selectedLead.name}</div>
-                  <div><b>Email:</b> {selectedLead.email}</div>
-                  <div><b>Phone:</b> {selectedLead.phone}</div>
-                  <div><b>Category:</b> {selectedLead.category}</div>
-                  <div><b>Comment:</b> {selectedLead.comment}</div>
+                <div className="space-y-3 break-words">
+                  <div>
+                    <b>Name:</b>
+                    <div className="text-[#2B2201] font-medium break-words">{selectedLead.name}</div>
+                  </div>
+                  <div>
+                    <b>Email:</b>
+                    <div className="text-[#2B2201] font-medium break-all">{selectedLead.email}</div>
+                  </div>
+                  <div>
+                    <b>Phone:</b>
+                    <div className="text-[#2B2201] font-medium break-all">{selectedLead.phone}</div>
+                  </div>
+                  <div>
+                    <b>Category:</b>
+                    <div className="text-[#2B2201] font-medium break-words">{selectedLead.category}</div>
+                  </div>
+                  <div>
+                    <b>Comment:</b>
+                    <div className="text-[#2B2201] font-medium whitespace-pre-line break-words max-h-40 overflow-y-auto px-2 py-1 bg-[#FFF6D4]/60 rounded">
+                      {selectedLead.comment}
+                    </div>
+                  </div>
                   <div>
                     <b>Status:</b>{" "}
                     <span className={`px-4 py-1 rounded-full text-xs font-bold shadow-sm ${selectedLead.status === "Active" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
@@ -138,7 +155,7 @@ const BusinessAdmin = () => {
                   </div>
                   {selectedLead.status !== "Active" && (
                     <button
-                      className="mt-4 px-4 py-2 rounded-lg  bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95"
+                      className="mt-4 px-4 py-2 rounded-lg cursor-pointer bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95 w-full"
                       onClick={() => handleSetActive(selectedLead)}
                       disabled={updating}
                     >

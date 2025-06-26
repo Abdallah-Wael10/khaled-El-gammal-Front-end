@@ -26,11 +26,11 @@ export const metadata = {
   openGraph: {
     title: "KHALED EL GAMAL | The Power Of Creativity",
     description: "Handcrafted Egyptian art and decor from Khaled El Gamal. Discover unique pieces inspired by Khan El Khalili.",
-    url: "https://your-domain.com",
+    url: "http://localhost:3000",
     siteName: "Khaled El Gamal",
     images: [
       {
-        url: "https://your-domain.com/khaledbg.jpg",
+        url: "http://localhost:3000/khaledbg.webp",
         width: 1200,
         height: 630,
         alt: "Khaled El Gamal Gallery",
@@ -43,7 +43,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "KHALED EL GAMAL | The Power Of Creativity",
     description: "Handcrafted Egyptian art and decor from Khaled El Gamal.",
-    images: ["https://your-domain.com/khaledbg.jpg"],
+    images: ["http://localhost:3000/khaledbg.webp"],
   },
   robots: "index, follow",
   icons: {

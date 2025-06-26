@@ -13,11 +13,11 @@ const Footer = () => {
                 <div className='w-[30%] h-max pb-5 text-white text-[16px] font-semibold flex flex-col  justify-center gap-5 items-center max-[900px]:w-full'>
                      <Link href="/" className='w-full h-max text-center'>Home</Link> 
                      <Link href="/pages/shop" className='w-full h-max text-center'>Shop</Link> 
-                     <Link href="/" className='w-full h-max text-center'>Business</Link> 
-                     <Link href="/" className='w-full h-max text-center'>Customize</Link> 
-                     <Link href="/" className='w-full h-max text-center'>Gallery</Link> 
-                     <Link href="/" className='w-full h-max text-center'>About Us</Link> 
-                     <Link href="/" className='w-full h-max text-center'>Contact Us</Link> 
+                     <Link href="/pages/Business" className='w-full h-max text-center'>Business</Link> 
+                     <Link href="/pages/Customize" className='w-full h-max text-center'>Customize</Link> 
+                     <Link href="/pages/Gallery" className='w-full h-max text-center'>Gallery</Link> 
+                     <Link href="/pages/AboutUs" className='w-full h-max text-center'>About Us</Link> 
+                     <Link href="/pages/ContactUs" className='w-full h-max text-center'>Contact Us</Link> 
                </div>
                     <div className='w-[40%] h-max pb-5 pt-5 flex justify-center items-center max-[900px]:w-full'>
                         <Image src={logo} alt="logo" className=' object-cover' priority/>
@@ -34,8 +34,8 @@ const Footer = () => {
                                     <div className='w-full h-max flex justify-center items-center gap-9'>
                                     
                                     <a href="tel:+201159227861"><Image src={wp} alt='whatsapp icon'/></a>
-                                    <a href="http://"><Image src={facebook} alt='facebook icon'/></a>
-                                    <a href="http://"><Image src={instagram} alt='instagram icon'/></a>
+                                    <a href="https://www.facebook.com/?locale=ar_AR"><Image src={facebook} alt='facebook icon'/></a>
+                                    <a href="https://www.instagram.com"><Image src={instagram} alt='instagram icon'/></a>
 
 
                                     </div>

@@ -27,7 +27,7 @@ body {
 
 @layer components {
   .bg-home {
-    background-image: url('/khaledbg.jpg');
+    background-image: url('/khaledbg.webp');
   }
   .bg-star {
     background-image: url('/star.png');

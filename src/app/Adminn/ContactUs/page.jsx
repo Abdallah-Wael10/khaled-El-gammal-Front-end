@@ -112,9 +112,15 @@ const ContactUsAdmin = () => {
         </div>
         {/* Pop-up Modal for Lead Details */}
         <Transition show={modalOpen} as={React.Fragment}>
-          <Dialog as="div" className="fixed inset-0 z-50 flex items-center text-black justify-center" onClose={() => setModalOpen(false)}>
+          <Dialog
+            as="div"
+            className="fixed inset-0 z-50 flex items-center text-black justify-center"
+            onClose={() => setModalOpen(false)}
+          >
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
-            <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-[95vw] max-w-md mx-auto flex flex-col gap-4 animate-fade-in">
+            <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-[95vw] max-w-md mx-auto flex flex-col gap-4 animate-fade-in"
+              style={{ maxHeight: "90vh", overflowY: "auto" }}
+            >
               <button
                 className="absolute top-3 right-3 text-2xl font-bold text-[#FFCF67] hover:text-[#917405] transition"
                 onClick={() => setModalOpen(false)}
@@ -122,13 +128,25 @@ const ContactUsAdmin = () => {
               >
                 &times;
               </button>
-              <h3 className="text-xl font-bold text-[#2B2201] mb-2">Lead Details</h3>
+              <h3 className="text-xl font-bold text-[#2B2201] mb-2 text-center">Lead Details</h3>
               {selectedLead && (
-                <div className="space-y-2">
-                  <div><b>Name:</b> {selectedLead.name}</div>
-                  <div><b>Email:</b> {selectedLead.email}</div>
-                  <div><b>Phone:</b> {selectedLead.phone}</div>
-                  <div><b>Comment:</b> {selectedLead.comment}</div>
+                <div className="space-y-3 break-words">
+                  <div>
+                    <b>Name:</b>
+                    <div className="text-[#2B2201] font-medium break-words">{selectedLead.name}</div>
+                  </div>
+                  <div>
+                    <b>Email:</b>
+                    <div className="text-[#2B2201] font-medium break-all">{selectedLead.email}</div>
+                  </div>
+                  <div>
+                    <b>Phone:</b>
+                    <div className="text-[#2B2201] font-medium break-all">{selectedLead.phone}</div>
+                  </div>
+                  <div>
+                    <b>Comment:</b>
+                    <div className="text-[#2B2201] font-medium whitespace-pre-line break-words max-h-40 overflow-y-auto px-2 py-1 bg-[#FFF6D4]/60 rounded">{selectedLead.comment}</div>
+                  </div>
                   <div>
                     <b>Status:</b>{" "}
                     <span className={`px-4 py-1 rounded-full text-xs font-bold shadow-sm ${selectedLead.status === "Active" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
@@ -137,7 +155,7 @@ const ContactUsAdmin = () => {
                   </div>
                   {selectedLead.status !== "Active" && (
                     <button
-                      className="mt-4 px-4 py-2 rounded-lg cursor-pointer bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95"
+                      className="mt-4 px-4 py-2 rounded-lg cursor-pointer bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95 w-full"
                       onClick={() => handleSetActive(selectedLead)}
                       disabled={updating}
                     >
