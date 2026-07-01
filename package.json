@@ -12,6 +12,7 @@
     "@headlessui/react": "^2.2.4",
     "@reduxjs/toolkit": "^2.8.2",
     "js-cookie": "^3.0.5",
+    "lucide-react": "^1.23.0",
     "motion": "^12.42.2",
     "next": "15.5.19",
     "react": "^19.2.7",

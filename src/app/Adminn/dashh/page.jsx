@@ -1,134 +1,203 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { getAuthToken } from "@/app/utils/page";
+
+import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { motion } from "motion/react";
+import { BriefcaseBusiness, Contact, Package, ShoppingBag, Sparkles, Users } from "lucide-react";
 import { useGetProductsQuery } from "@/app/features/Api/ProductApi";
 import { useGetAllCheckoutsQuery } from "@/app/features/Api/CheckoutApi";
 import Loading from "@/app/components/loading/page";
-import Nav2 from "@/app/components/Nav2/page";
-import Link from "next/link";
+import {
+  AdminEmptyState,
+  AdminMotionList,
+  AdminPageHeader,
+  AdminPanel,
+  AdminShell,
+  AdminStatCard,
+  AdminStatusBadge,
+  adminTdClass,
+  adminThClass,
+  adminTableClass,
+} from "@/app/components/Admin/AdminComponents";
+import { useRequireAdmin } from "@/app/hooks/useRequireAdmin";
 
 const Dashboard = () => {
-  const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const { checking, token } = useRequireAdmin();
   const [usersCount, setUsersCount] = useState(null);
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const { data: products = [], isLoading: loadingProducts } = useGetProductsQuery();
   const { data: checkouts = [], isLoading: loadingCheckouts } = useGetAllCheckoutsQuery();
 
-  // Fetch users count
   useEffect(() => {
+    if (!token || !baseUrl) return;
+
     const fetchUsersCount = async () => {
-      const Token = getAuthToken();
       try {
         const response = await fetch(`${baseUrl}/api/users`, {
-          headers: {
-            Authorization: `Bearer ${Token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
-        setUsersCount(Array.isArray(data) ? data.length : (data.count || 0));
+        setUsersCount(Array.isArray(data) ? data.length : data.count || 0);
       } catch {
         setUsersCount(0);
       }
     };
+
     fetchUsersCount();
-  }, [baseUrl]);
+  }, [baseUrl, token]);
 
-  // Auth check
-  useEffect(() => {
-    const token = getAuthToken();
-    let role = null;
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        role = payload.role;
-      } catch {
-        role = null;
-      }
-    }
-    if (!token || role !== "admin") {
-      router.replace("/Adminn/login");
-    }
-    setChecking(false);
-  }, [router]);
+  const stats = useMemo(() => {
+    const pendingOrders = checkouts.filter((order) => order.status !== "active").length;
+    const outOfStock = products.filter((product) => !product.inStock || Number(product.stock) <= 0).length;
 
-  // Memoized stats for clean code
-  const stats = useMemo(() => [
-    {
-      title: "Total Products",
-      value: loadingProducts ? "..." : products.length,
-      link: "/Adminn/Products",
-      color: "bg-gradient-to-r from-[#FFCF67] to-[#FFD96B]",
-      icon: "📦",
-    },
-    {
-      title: "Total Orders",
-      value: loadingCheckouts ? "..." : checkouts.length,
-      link: "/Adminn/Orders",
-      color: "bg-white",
-      icon: "🧾",
-    },
-    {
-      title: "Total Users",
-      value: usersCount === null ? "..." : usersCount,
-      link: "/Adminn/users",
-      color: "bg-gradient-to-r from-[#FFCF67] to-[#FFB300]",
-      icon: "👤",
-    },
-  ], [products, loadingProducts, checkouts, loadingCheckouts, usersCount]);
+    return [
+      {
+        label: "Products",
+        value: loadingProducts ? "..." : products.length,
+        href: "/Adminn/Products",
+        icon: Package,
+        tone: "gold",
+      },
+      {
+        label: "Orders",
+        value: loadingCheckouts ? "..." : checkouts.length,
+        href: "/Adminn/Orders",
+        icon: ShoppingBag,
+        tone: "blue",
+      },
+      {
+        label: "Pending Orders",
+        value: loadingCheckouts ? "..." : pendingOrders,
+        href: "/Adminn/Orders",
+        icon: Sparkles,
+        tone: "neutral",
+      },
+      {
+        label: "Users",
+        value: usersCount === null ? "..." : usersCount,
+        href: "/Adminn/users",
+        icon: Users,
+        tone: "green",
+      },
+      {
+        label: "Stock Alerts",
+        value: loadingProducts ? "..." : outOfStock,
+        href: "/Adminn/Products",
+        icon: BriefcaseBusiness,
+        tone: "neutral",
+      },
+    ];
+  }, [checkouts, loadingCheckouts, loadingProducts, products, usersCount]);
 
-  if (checking) return <Loading />;
+  const recentOrders = useMemo(() => {
+    return [...checkouts]
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .slice(0, 5);
+  }, [checkouts]);
+
+  if (checking) {
+    return <Loading message="Checking admin access..." detail="Securing the admin workspace" />;
+  }
 
   return (
-    <div className="min-h-screen bg-[#FFFDF7]">
-      <Nav2 />
-      <main className="max-w-6xl mx-auto px-4 py-10">
-        <h1 className="text-3xl md:text-4xl font-bold text-[#2B2201] text-center mb-2">
-          Welcome to the Admin Dashboard
-        </h1>
-        <p className="text-center text-[#A4A4A4] text-lg mb-10">
-          Here you can manage all aspects of your store: products, orders, users, and more.<br />
-          Use the quick stats and navigation below to get an overview and jump to any section.
-        </p>
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12 ">
-          {stats.map((stat) => (
-            <Link
-              key={stat.title}
-              href={stat.link}
-              className={`rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center hover:scale-105 transition-all duration-300 ${stat.color}`}
-            >
-              <span className="text-4xl mb-2">{stat.icon}</span>
-              <span className="text-lg font-semibold text-[#2B2201]">{stat.title}</span>
-              <span className="text-2xl font-bold text-[#2B2201] mt-2">{stat.value}</span>
-              <span className="mt-2 text-[#917405] text-sm underline">View</span>
+    <AdminShell title="Dashboard">
+      <AdminPageHeader
+        eyebrow="Operations"
+        title="Admin Dashboard"
+        description="Track store health, jump into high-priority work, and manage the daily flow from one place."
+        actions={
+          <Link
+            href="/Adminn/Products"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#c99a20] bg-[#d8aa2e] px-4 text-sm font-bold text-[#211900] transition-colors hover:bg-[#e5bb48]"
+          >
+            <Package className="h-4 w-4" aria-hidden="true" />
+            Add product
+          </Link>
+        }
+      />
+
+      <AdminMotionList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {stats.map((stat) => (
+          <AdminStatCard key={stat.label} {...stat} />
+        ))}
+      </AdminMotionList>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+        <AdminPanel>
+          <div className="flex items-center justify-between gap-3 border-b border-[#eee2c9] p-4">
+            <div>
+              <h3 className="text-base font-bold text-[#211900]">Recent Orders</h3>
+              <p className="text-sm text-[#695f4c]">Latest customer activity and status.</p>
+            </div>
+            <Link href="/Adminn/Orders">
+              <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d8ccb3] bg-white px-4 text-sm font-bold text-[#3c310f] transition-colors hover:border-[#c49a22] hover:bg-[#fff9ea]">
+                <ShoppingBag className="h-4 w-4" aria-hidden="true" />
+                View all
+              </span>
             </Link>
-          ))}
-        </div>
-        {/* Introduction Section */}
-        <div className="bg-white rounded-2xl shadow-md p-8 flex flex-col md:flex-row gap-8 items-center">
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-[#FFCF67] mb-2">Dashboard Overview</h2>
-            <ul className="list-disc pl-6 text-[#2B2201] text-base space-y-2">
-              <li>
-                <b>Products:</b> Add, edit, or remove products. Track stock and discounts.
-              </li>
-              <li>
-                <b>Orders:</b> View and manage all customer orders, update statuses, and track sales.
-              </li>
-              <li>
-                <b>Users:</b> Manage registered users and their permissions.
-              </li>
-              <li>
-                <b>Gallery:</b> Manage images and media for the store.
-              </li>
-            </ul>
           </div>
-        </div>
-      </main>
-    </div>
+          {loadingCheckouts ? (
+            <div className="p-4">
+              <Loading variant="inline" message="Loading orders..." detail="Preparing recent order activity" />
+            </div>
+          ) : recentOrders.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className={adminTableClass}>
+                <thead>
+                  <tr>
+                    <th className={adminThClass}>Customer</th>
+                    <th className={adminThClass}>Date</th>
+                    <th className={adminThClass}>Status</th>
+                    <th className={adminThClass}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => (
+                    <motion.tr key={order._id} layout className="hover:bg-[#fffaf0]">
+                      <td className={adminTdClass}>
+                        <div className="font-bold">{order.userInfo?.name || "Unknown"}</div>
+                        <div className="text-xs text-[#695f4c]">{order.userInfo?.email}</div>
+                      </td>
+                      <td className={adminTdClass}>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-"}</td>
+                      <td className={adminTdClass}><AdminStatusBadge status={order.status} /></td>
+                      <td className={`${adminTdClass} font-bold tabular-nums`}>{order.total || 0} LE</td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <AdminEmptyState title="No orders yet" description="New checkout activity will appear here." icon={ShoppingBag} />
+          )}
+        </AdminPanel>
+
+        <AdminPanel className="p-4">
+          <h3 className="text-base font-bold text-[#211900]">Quick Actions</h3>
+          <p className="mt-1 text-sm text-[#695f4c]">Common admin tasks for daily operations.</p>
+          <div className="mt-4 grid gap-2">
+            {[
+              { href: "/Adminn/Products", label: "Manage products", icon: Package },
+              { href: "/Adminn/Gallery", label: "Update gallery", icon: Sparkles },
+              { href: "/Adminn/Business", label: "Review business leads", icon: BriefcaseBusiness },
+              { href: "/Adminn/Customize", label: "Review customization", icon: Contact },
+            ].map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="flex min-h-12 items-center gap-3 rounded-lg border border-[#e8dcc2] bg-[#fffdf8] px-3 text-sm font-bold text-[#2d250d] transition hover:border-[#c99a20] hover:bg-[#fff7e4]"
+                >
+                  <Icon className="h-4 w-4 text-[#7a5f07]" aria-hidden="true" />
+                  {action.label}
+                </Link>
+              );
+            })}
+          </div>
+        </AdminPanel>
+      </div>
+    </AdminShell>
   );
 };
 

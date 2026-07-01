@@ -1,206 +1,180 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useGetAllCheckoutsQuery, useUpdateCheckoutStatusMutation } from "@/app/features/Api/CheckoutApi";
-import Nav2 from "@/app/components/Nav2/page";
-import { getAuthToken } from "@/app/utils/page";
-import Loading from "@/app/components/loading/page";
-import { Dialog, Transition } from "@headlessui/react";
+
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { CheckCircle2, ShoppingBag } from "lucide-react";
+import { useGetAllCheckoutsQuery, useUpdateCheckoutStatusMutation } from "@/app/features/Api/CheckoutApi";
+import Loading from "@/app/components/loading/page";
+import {
+  AdminButton,
+  AdminEmptyState,
+  AdminModal,
+  AdminPageHeader,
+  AdminPanel,
+  AdminShell,
+  AdminStatusBadge,
+  AdminTable,
+  adminTdClass,
+  adminThClass,
+  adminTableClass,
+} from "@/app/components/Admin/AdminComponents";
+import { useRequireAdmin } from "@/app/hooks/useRequireAdmin";
 
 const Orders = () => {
-  const { data: orders, isLoading, error, refetch } = useGetAllCheckoutsQuery();
+  const { checking } = useRequireAdmin();
+  const { data: orders = [], isLoading, error, refetch } = useGetAllCheckoutsQuery();
   const [updateStatus, { isLoading: updating }] = useUpdateCheckoutStatusMutation();
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
-  const router = useRouter();
-  const token = getAuthToken();
-
-  // Redirect if not admin
-  useEffect(() => {
-    if (!token) {
-      router.replace("/Adminn/login");
-      return;
-    }
-    let role = null;
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      role = payload.role;
-    } catch {
-      role = null;
-    }
-    if (role !== "admin") {
-      router.replace("/Adminn/login");
-    }
-  }, [token, router]);
-
-  const handleOpenOrder = (order) => {
-    setSelectedOrder(order);
-    setModalOpen(true);
-  };
+  const sortedOrders = useMemo(() => {
+    return [...orders].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }, [orders]);
 
   const handleSetActive = async (order) => {
-    if (order.status === "active") return;
+    if (!order || order.status === "active") return;
     try {
-      await updateStatus({
-        id: order._id,
-        status: "active",
-      }).unwrap();
+      await updateStatus({ id: order._id, status: "active" }).unwrap();
       refetch();
       setSelectedOrder({ ...order, status: "active" });
-    } catch (err) {
+    } catch {
       alert("Failed to update status");
     }
   };
 
-  if (isLoading) return <Loading />;
-  if (error) return <div className="text-red-500 text-center mt-10">Error loading orders</div>;
+  if (checking) return <Loading message="Checking admin access..." detail="Opening order management" />;
 
   return (
-    <div className="bg-gradient-to-br from-[#FFFDF7] via-[#FFF6D4] to-[#FFFCF2] min-h-screen text-black">
-      <Nav2 />
-      <main className="max-w-6xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#2B2201] text-center mb-2 tracking-tight">
-          Orders Management
-        </h1>
-        <p className="text-center text-[#A4A4A4] text-base sm:text-lg mb-8 sm:mb-10">
-          Review all orders, see client details, products, and update order status.
-        </p>
-        <div className="bg-white/90 rounded-2xl shadow-xl p-4 sm:p-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#FFCF67] mb-4 sm:mb-6">All Orders</h2>
-          {orders && orders.length > 0 ? (
-            <ul className="divide-y divide-[#f3e6c2]">
-              {orders.map((order) => (
-                <li
-                  key={order._id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between py-3 sm:py-4 px-1 sm:px-2 cursor-pointer hover:bg-[#FFF6D4]/70 rounded-xl transition-all duration-200 group gap-2"
-                  onClick={() => handleOpenOrder(order)}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <span className="font-semibold text-[#2B2201] text-sm sm:text-base md:text-lg truncate max-w-[140px] sm:max-w-[180px]">
-                      {order.userInfo?.name || "Unknown"}
-                    </span>
-                    <span className="sm:ml-2 text-[#A4A4A4] text-xs sm:text-sm truncate max-w-[120px]">{order.userInfo?.email}</span>
-                    <span className="sm:ml-2 text-[#A4A4A4] text-xs sm:text-sm">{order.userInfo?.phone}</span>
-                    <span className="sm:ml-2 text-[#A4A4A4] text-xs sm:text-sm">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleString() : ""}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1 sm:mt-0">
-                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold shadow-sm ${order.status === "active" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
-                      {order.status}
-                    </span>
-                    <span className="font-bold text-[#FFCF67] text-sm sm:text-base">{order.total} LE</span>
-                    <button
-                      className={`px-2 sm:px-3 py-1 rounded-lg text-xs font-semibold shadow transition-all duration-200 ${
-                        order.status === "active"
-                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                          : "bg-[#FFCF67] text-white hover:bg-[#FFD96B] hover:text-[#2B2201] active:scale-95"
-                      }`}
-                      disabled={order.status === "active" || updating}
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleSetActive(order);
-                      }}
-                    >
-                      Mark as Active
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-center text-[#A4A4A4]">No orders found.</p>
-          )}
-        </div>
-        {/* Pop-up Modal for Order Details */}
-        <Transition show={modalOpen} as={React.Fragment}>
-          <Dialog as="div" className="fixed inset-0 z-50 flex items-center text-black justify-center" onClose={() => setModalOpen(false)}>
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
-            <div
-              className="relative z-10 bg-white rounded-2xl shadow-2xl p-4 sm:p-8 w-[98vw] max-w-lg sm:max-w-2xl mx-auto flex flex-col gap-4 animate-fade-in"
-              style={{ maxHeight: "90vh", overflowY: "auto" }}
-            >
-              <button
-                className="sticky top-0 left-full float-right text-2xl font-bold text-[#FFCF67] hover:text-[#917405] transition bg-white z-10"
-                onClick={() => setModalOpen(false)}
-                aria-label="Close"
-                style={{ alignSelf: "flex-end" }}
-              >
-                &times;
-              </button>
-              <h3 className="text-lg sm:text-xl font-bold text-[#2B2201] mb-2">Order Details</h3>
-              {selectedOrder && (
-                <div className="space-y-2 text-sm sm:text-base">
-                  <div><b>Client Name:</b> {selectedOrder.userInfo?.name}</div>
-                  <div><b>Email:</b> {selectedOrder.userInfo?.email}</div>
-                  <div><b>Phone:</b> {selectedOrder.userInfo?.phone}</div>
-                  <div><b>Country:</b> {selectedOrder.userInfo?.country}</div>
-                  <div><b>Governorate:</b> {selectedOrder.userInfo?.governorate}</div>
-                  <div><b>Address:</b> {selectedOrder.userInfo?.address}</div>
-                  <div><b>Apartment:</b> {selectedOrder.userInfo?.apartment}</div>
-                  <div><b>Notes:</b> {selectedOrder.userInfo?.notes}</div>
-                  <div><b>Order Date:</b> {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleString() : ""}</div>
-                  <div><b>Status:</b>{" "}
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${selectedOrder.status === "active" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
-                      {selectedOrder.status}
-                    </span>
-                  </div>
-                  <div><b>Total:</b> <span className="font-bold text-[#FFCF67]">{selectedOrder.total} LE</span></div>
-                  <div><b>Payment Method:</b> {selectedOrder.paymentMethod}</div>
-                  <div className="mt-3">
-                    <b>Products:</b>
-                    <div className="flex flex-col gap-3 mt-2">
-                      {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                        selectedOrder.items.map((item, idx) => (
-                          <div key={idx} className="flex flex-col sm:flex-row items-center gap-3 border-b border-gray-100 pb-3">
-                            <Image
-                              src={
-                                item.mainImage
-                                  ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.mainImage}`
-                                  : "/no-image.png"
-                              }
-                              alt={item.title || "Product"}
-                              width={120}
-                              height={80}
-                              className="rounded-lg object-cover border border-[#FFCF67]/30 w-[90px] h-[70px] sm:w-[120px] sm:h-[80px]"
-                            />
-                            <div className="flex-1 text-center sm:text-left">
-                              <div className="font-semibold text-[#FFCF67] truncate">{item.title}</div>
-                              <div className="text-gray-700 font-medium">
-                                <span>{item.price} LE</span>
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Qty: {item.quantity} {item.size && <>| Size: {item.size}</>}
-                              </div>
-                            </div>
-                            <div className="font-bold text-black text-sm">
-                              {item.price * item.quantity} LE
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <span className="text-[#A4A4A4]">No products in this order.</span>
-                      )}
-                    </div>
-                  </div>
-                  {selectedOrder.status !== "active" && (
-                    <button
-                      className="mt-4 px-4 py-2 rounded-lg bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95 w-full sm:w-auto"
-                      onClick={() => handleSetActive(selectedOrder)}
-                      disabled={updating}
-                    >
-                      {updating ? "Updating..." : "Mark as Active"}
-                    </button>
-                  )}
+    <AdminShell title="Orders">
+      <AdminPageHeader
+        eyebrow="Sales"
+        title="Orders Management"
+        description="Review checkout activity, customer details, ordered items, and fulfillment status."
+      />
+
+      <AdminPanel>
+        {isLoading ? (
+          <Loading variant="inline" message="Loading orders..." detail="Preparing order management" />
+        ) : error ? (
+          <AdminEmptyState title="Could not load orders" description="Refresh the page or try again once the API is available." icon={ShoppingBag} />
+        ) : sortedOrders.length > 0 ? (
+          <AdminTable>
+            <table className={adminTableClass}>
+              <thead>
+                <tr>
+                  <th className={adminThClass}>Customer</th>
+                  <th className={adminThClass}>Contact</th>
+                  <th className={adminThClass}>Date</th>
+                  <th className={adminThClass}>Status</th>
+                  <th className={adminThClass}>Total</th>
+                  <th className={`${adminThClass} text-right`}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedOrders.map((order) => (
+                  <motion.tr key={order._id} layout className="hover:bg-[#fffaf0]">
+                    <td className={adminTdClass}>
+                      <div className="font-bold">{order.userInfo?.name || "Unknown"}</div>
+                      <div className="text-xs text-[#695f4c]">#{String(order._id).slice(-6)}</div>
+                    </td>
+                    <td className={adminTdClass}>
+                      <div>{order.userInfo?.email || "-"}</div>
+                      <div className="text-xs text-[#695f4c]">{order.userInfo?.phone || "-"}</div>
+                    </td>
+                    <td className={adminTdClass}>{order.createdAt ? new Date(order.createdAt).toLocaleString() : "-"}</td>
+                    <td className={adminTdClass}><AdminStatusBadge status={order.status} /></td>
+                    <td className={`${adminTdClass} font-bold tabular-nums`}>{order.total || 0} LE</td>
+                    <td className={`${adminTdClass} text-right`}>
+                      <AdminButton variant="secondary" onClick={() => setSelectedOrder(order)}>Details</AdminButton>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </AdminTable>
+        ) : (
+          <AdminEmptyState title="No orders found" description="Customer checkout orders will appear here." icon={ShoppingBag} />
+        )}
+      </AdminPanel>
+
+      <AdminModal
+        open={Boolean(selectedOrder)}
+        onClose={() => setSelectedOrder(null)}
+        title="Order Details"
+        size="lg"
+      >
+        {selectedOrder && (
+          <div className="grid gap-5">
+            <div className="grid gap-3 rounded-lg border border-[#eee2c9] bg-[#fffdf8] p-4 sm:grid-cols-2">
+              {[
+                ["Client", selectedOrder.userInfo?.name],
+                ["Email", selectedOrder.userInfo?.email],
+                ["Phone", selectedOrder.userInfo?.phone],
+                ["Country", selectedOrder.userInfo?.country],
+                ["Governorate", selectedOrder.userInfo?.governorate],
+                ["Address", selectedOrder.userInfo?.address],
+                ["Apartment", selectedOrder.userInfo?.apartment],
+                ["Payment", selectedOrder.paymentMethod],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7a5f07]">{label}</p>
+                  <p className="mt-1 break-words text-sm font-semibold text-[#211900]">{value || "-"}</p>
                 </div>
+              ))}
+              <div className="sm:col-span-2">
+                <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#7a5f07]">Notes</p>
+                <p className="mt-1 whitespace-pre-line break-words text-sm text-[#211900]">{selectedOrder.userInfo?.notes || "-"}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#eee2c9] p-4">
+              <div>
+                <p className="text-sm font-bold text-[#211900]">Status</p>
+                <div className="mt-2"><AdminStatusBadge status={selectedOrder.status} /></div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-[#695f4c]">Total</p>
+                <p className="text-2xl font-bold tabular-nums text-[#211900]">{selectedOrder.total || 0} LE</p>
+              </div>
+              {selectedOrder.status !== "active" && (
+                <AdminButton icon={CheckCircle2} loading={updating} onClick={() => handleSetActive(selectedOrder)}>
+                  Mark as Active
+                </AdminButton>
               )}
             </div>
-          </Dialog>
-        </Transition>
-      </main>
-    </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-[#211900]">Products</h4>
+              <div className="mt-3 grid gap-3">
+                {selectedOrder.items?.length ? (
+                  selectedOrder.items.map((item, index) => (
+                    <div key={`${item.title}-${index}`} className="flex gap-3 rounded-lg border border-[#eee2c9] p-3">
+                      <Image
+                        src={item.mainImage ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.mainImage}` : "/no-image.png"}
+                        alt={item.title || "Product"}
+                        width={92}
+                        height={72}
+                        className="h-[72px] w-[92px] rounded-lg object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-[#211900]">{item.title || "Product"}</p>
+                        <p className="mt-1 text-sm text-[#695f4c]">
+                          Qty: {item.quantity || 1}
+                          {item.size ? ` | Size: ${item.size}` : ""}
+                        </p>
+                      </div>
+                      <div className="font-bold tabular-nums">{(item.price || 0) * (item.quantity || 1)} LE</div>
+                    </div>
+                  ))
+                ) : (
+                  <AdminEmptyState title="No products in this order" icon={ShoppingBag} />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </AdminModal>
+    </AdminShell>
   );
 };
 

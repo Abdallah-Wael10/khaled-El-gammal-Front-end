@@ -1,87 +1,90 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
-import Nav2 from "@/app/components/Nav2/page";
-import { getAuthToken } from "@/app/utils/page";
-import { useRouter } from "next/navigation";
-import Loading from "@/app/components/loading/page";
+
+import React, { useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { motion } from "motion/react";
+import { Edit3, Package, Plus, Settings2, Trash2, Upload } from "lucide-react";
 import {
-  useGetShippingQuery,
   useCreateShippingMutation,
-  useUpdateShippingMutation,
   useDeleteShippingMutation,
+  useGetShippingQuery,
+  useUpdateShippingMutation,
 } from "@/app/features/Api/ShippingApi";
 import {
-  useGetProductsQuery,
-  useAddProductMutation,
-  useUpdateProductMutation,
-  useDeleteProductMutation,
   useAddProductImageMutation,
-  useReplaceProductImageMutation,
+  useAddProductMutation,
   useDeleteProductImageMutation,
-} from '@/app/features/Api/ProductApi';
-import Image from "next/image";
-import { Dialog, Transition } from "@headlessui/react";
+  useDeleteProductMutation,
+  useGetProductsQuery,
+  useReplaceProductImageMutation,
+  useUpdateProductMutation,
+} from "@/app/features/Api/ProductApi";
+import Loading from "@/app/components/loading/page";
+import {
+  AdminButton,
+  AdminConfirmDialog,
+  AdminEmptyState,
+  AdminField,
+  AdminModal,
+  AdminPageHeader,
+  AdminPanel,
+  AdminSearch,
+  AdminShell,
+  AdminStatusBadge,
+  AdminToolbar,
+  adminInputClass,
+} from "@/app/components/Admin/AdminComponents";
+import { useRequireAdmin } from "@/app/hooks/useRequireAdmin";
+
+const emptyForm = {
+  title: "",
+  description: "",
+  price: "",
+  discountPrice: "",
+  inStock: true,
+  category: "",
+  stock: "",
+  sizes: [],
+  mainImage: null,
+  images: [],
+};
 
 const Products = () => {
-  const router = useRouter();
-  const token = getAuthToken();
-
-  useEffect(() => {
-    if (!token) {
-      router.replace("/Adminn/login");
-      return;
-    }
-    let role = null;
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      role = payload.role;
-    } catch {
-      role = null;
-    }
-    if (role !== "admin") {
-      router.replace("/Adminn/login");
-    }
-  }, [token, router]);
-
-  const { data: products, isLoading, refetch } = useGetProductsQuery();
+  const { checking } = useRequireAdmin();
+  const { data: products = [], isLoading, refetch } = useGetProductsQuery();
   const [addProduct, { isLoading: adding }] = useAddProductMutation();
   const [updateProduct, { isLoading: updating }] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [addProductImage] = useAddProductImageMutation();
   const [replaceProductImage] = useReplaceProductImageMutation();
   const [deleteProductImage] = useDeleteProductImageMutation();
+  const { data: shippingData, isLoading: shippingLoading, refetch: refetchShipping } = useGetShippingQuery();
+  const [createShipping, { isLoading: creatingShipping }] = useCreateShippingMutation();
+  const [updateShipping, { isLoading: updatingShipping }] = useUpdateShippingMutation();
+  const [deleteShipping, { isLoading: deletingShipping }] = useDeleteShippingMutation();
 
-  const {
-    data: shippingData,
-    isLoading: shippingLoading,
-    refetch: refetchShipping,
-  } = useGetShippingQuery();
-  const [createShipping] = useCreateShippingMutation();
-  const [updateShipping] = useUpdateShippingMutation();
-  const [deleteShipping] = useDeleteShippingMutation();
-
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    price: "",
-    discountPrice: "",
-    inStock: true,
-    category: "",
-    stock: "",
-    sizes: [],
-    mainImage: null,
-    images: [],
-  });
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState("");
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [shippingInput, setShippingInput] = useState("");
+  const imagesInputRef = useRef(null);
 
-  const imagesInputRef = useRef();
+  const filteredProducts = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return products.filter((product) => {
+      const matchesSearch = !query || [product.title, product.category].some((value) => String(value || "").toLowerCase().includes(query));
+      const matchesStock = showInStockOnly ? product.inStock : true;
+      return matchesSearch && matchesStock;
+    });
+  }, [products, search, showInStockOnly]);
 
-  // Open modal for add/edit
   const openModal = (product = null) => {
-    setEditMode(!!product);
+    setEditMode(Boolean(product));
     setCurrentProduct(product);
     setForm({
       title: product?.title || "",
@@ -98,30 +101,26 @@ const Products = () => {
     setModalOpen(true);
   };
 
-  // Add/remove size
-  const handleAddSize = (size) => {
-    if (size && !form.sizes.includes(size)) {
-      setForm({ ...form, sizes: [...form.sizes, size] });
-    }
-  };
-  const handleRemoveSize = (size) => {
-    setForm({ ...form, sizes: form.sizes.filter(s => s !== size) });
+  const resetForm = () => {
+    setModalOpen(false);
+    setForm(emptyForm);
+    setCurrentProduct(null);
+    setEditMode(false);
   };
 
-  // Add new images (append)
+  const handleAddSize = (size) => {
+    if (size && !form.sizes.includes(size)) {
+      setForm((current) => ({ ...current, sizes: [...current.sizes, size] }));
+    }
+  };
+
   const handleAddImages = (files) => {
-    setForm({ ...form, images: [...form.images, ...Array.from(files)] });
+    setForm((current) => ({ ...current, images: [...current.images, ...Array.from(files || [])] }));
     if (imagesInputRef.current) imagesInputRef.current.value = "";
   };
 
-  // Remove new image before submit
-  const handleRemoveNewImage = (idx) => {
-    setForm({ ...form, images: form.images.filter((_, i) => i !== idx) });
-  };
-
-  // Handle submit (add/update product)
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     const formData = new FormData();
     formData.append("title", form.title);
     formData.append("description", form.description);
@@ -130,13 +129,10 @@ const Products = () => {
     formData.append("inStock", form.inStock);
     formData.append("category", form.category);
     formData.append("stock", form.stock);
-if (form.sizes.length === 0) {
-  formData.append("sizes[]", ""); 
-} else {
-  form.sizes.forEach(size => formData.append("sizes[]", size));
-}
+    if (form.sizes.length === 0) formData.append("sizes[]", "");
+    else form.sizes.forEach((size) => formData.append("sizes[]", size));
     if (form.mainImage) formData.append("mainImage", form.mainImage);
-    form.images.forEach(img => formData.append("images", img));
+    form.images.forEach((img) => formData.append("images", img));
 
     try {
       if (editMode && currentProduct) {
@@ -144,464 +140,384 @@ if (form.sizes.length === 0) {
       } else {
         await addProduct(formData).unwrap();
       }
-      setModalOpen(false);
-      setForm({
-        title: "",
-        description: "",
-        price: "",
-        discountPrice: "",
-        inStock: true,
-        category: "",
-        stock: "",
-        sizes: [],
-        mainImage: null,
-        images: [],
-      });
-      setCurrentProduct(null);
+      resetForm();
       refetch();
     } catch {
       alert("Error saving product");
     }
   };
 
-  // Delete product
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+  const refreshCurrentProduct = async () => {
+    if (!currentProduct) return;
+    const updated = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${currentProduct._id}`).then((res) => res.json());
+    setCurrentProduct(updated);
+    refetch();
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await deleteProduct(id).unwrap();
+      await deleteProduct(deleteTarget._id).unwrap();
+      setDeleteTarget(null);
       refetch();
     } catch {
       alert("Error deleting product");
+    } finally {
+      setDeleting(false);
     }
   };
 
-  // Add new image (append) to backend (not used in modal, but for direct API)
-  const handleAddImage = async (file) => {
-    if (!currentProduct) return;
-    await addProductImage({ id: currentProduct._id, image: file });
-    // بعد الإضافة اعمل refetch للمنتج
-    const updated = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${currentProduct._id}`).then(res => res.json());
-    setCurrentProduct(updated);
-    refetch();
+  const saveShipping = async () => {
+    const value = Number(shippingInput);
+    if (Number.isNaN(value)) return;
+    if (shippingData) await updateShipping({ shippingCost: value });
+    else await createShipping({ shippingCost: value });
+    setShippingInput("");
+    refetchShipping();
   };
 
-  // Replace old image with new one 
-  const handleReplaceImageApi = async (imageName, file) => {
-    if (!currentProduct) return;
-    await replaceProductImage({ id: currentProduct._id, imageName, image: file });
-    // بعد الاستبدال اعمل refetch للمنتج
-    const updated = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${currentProduct._id}`).then(res => res.json());
-    setCurrentProduct(updated);
-    refetch();
-  };
-
-  // Delete image 
-  const handleDeleteImage = async (imageName) => {
-    if (!currentProduct) return;
-    await deleteProductImage({ id: currentProduct._id, imageName });
-    // بعد الحذف اعمل refetch للمنتج
-    const updated = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${currentProduct._id}`).then(res => res.json());
-    setCurrentProduct(updated);
-    refetch();
-  };
-
-  // Filter/Search state
-  const [search, setSearch] = useState("");
-  const [showInStockOnly, setShowInStockOnly] = useState(false);
-  const [shippingInput, setShippingInput] = useState("");
-
-  // Filtered products
-  const filteredProducts = (products || []).filter(product => {
-    const matchesSearch =
-      product.title.toLowerCase().includes(search.toLowerCase()) ||
-      product.category.toLowerCase().includes(search.toLowerCase());
-    const matchesStock = showInStockOnly ? product.inStock : true;
-    return matchesSearch && matchesStock;
-  });
+  if (checking) return <Loading message="Checking admin access..." detail="Opening product management" />;
 
   return (
-    <div className="bg-gradient-to-br from-[#FFFDF7] via-[#FFF6D4] to-[#FFFCF2] min-h-screen text-black">
-      <Nav2 />
-      <main className="max-w-6xl mx-auto px-4 py-10">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-          <h1 className="text-3xl font-bold text-[#FFCF67] max-[600px]:w-full max-[600px]:text-center max-[600px]:text-[20px]">Products Management</h1>
-          <div className="flex flex-col md:flex-row gap-3 items-center">
-            <input
-              type="text"
-              placeholder="Search by name or category..."
-              className="px-3 py-2 rounded-lg border-2 border-[#FFCF67] focus:ring-2 focus:ring-[#FFCF67] outline-none bg-white/80 text-sm"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <label className="flex items-center gap-2 text-[#917405] font-semibold cursor-pointer">
+    <AdminShell title="Products">
+      <AdminPageHeader
+        eyebrow="Catalog"
+        title="Products Management"
+        description="Manage product details, stock, sizes, images, and shipping settings from one compact workspace."
+        actions={<AdminButton icon={Plus} onClick={() => openModal()}>Add product</AdminButton>}
+      />
+
+      <AdminPanel className="mb-6">
+        <AdminToolbar>
+          <div className="flex w-full flex-col gap-3 md:flex-row md:items-center">
+            <AdminSearch value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products..." />
+            <label className="flex min-h-11 items-center gap-2 rounded-lg border border-[#d8ccb3] bg-white px-3 text-sm font-bold text-[#5f512d]">
               <input
                 type="checkbox"
                 checked={showInStockOnly}
-                onChange={e => setShowInStockOnly(e.target.checked)}
-                className="accent-[#FFCF67] w-4 h-4"
+                onChange={(event) => setShowInStockOnly(event.target.checked)}
+                className="h-4 w-4 accent-[#d8aa2e]"
               />
-              In Stock Only
+              In stock only
             </label>
-            <button
-              className="px-5 py-2 rounded-lg bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95"
-              onClick={() => openModal()}
-            >
-              + Add New
-            </button>
           </div>
-        </div>
-        <div className="bg-white/90 rounded-2xl shadow-xl p-8">
-          {isLoading ? (
-            <Loading variant="inline" message="Loading products..." detail="Preparing product management" />
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              {filteredProducts.map((product) => (
-                <div
-                  key={product._id}
-                  className="bg-[#FFFDF7] rounded-xl shadow p-4 flex flex-col items-center group transition-all duration-200 hover:shadow-lg"
-                >
+          <div className="whitespace-nowrap text-sm font-bold text-[#695f4c]">{filteredProducts.length} products</div>
+        </AdminToolbar>
+
+        {isLoading ? (
+          <Loading variant="inline" message="Loading products..." detail="Preparing product cards" />
+        ) : filteredProducts.length > 0 ? (
+          <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredProducts.map((product) => (
+              <motion.article
+                key={product._id}
+                layout
+                whileHover={{ y: -3 }}
+                className="overflow-hidden rounded-lg border border-[#e8dcc2] bg-[#fffdf8] shadow-sm"
+              >
+                <div className="relative aspect-[4/3] bg-[#f2ead7]">
                   <Image
                     src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`}
-                    alt={product.title}
-                    width={220}
-                    height={160}
-                    priority
-                    className="rounded-lg object-cover border border-[#FFCF67]/30 mb-3"
+                    alt={product.title || "Product"}
+                    fill
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover"
                   />
-                  <div className="font-semibold text-[#2B2201] text-lg mb-2">{product.title}</div>
-                  <div className="text-[#A4A4A4] text-sm mb-2">{product.category}</div>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {product.sizes.map((size, idx) => (
-                      <span key={idx} className="px-2 py-1 rounded bg-[#FFCF67]/20 text-xs text-[#917405]">{size}</span>
+                  <span className="absolute left-3 top-3"><AdminStatusBadge status={product.inStock ? "In stock" : "Out of stock"} /></span>
+                </div>
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="line-clamp-1 text-base font-bold text-[#211900]">{product.title}</h3>
+                      <p className="mt-1 text-sm text-[#695f4c]">{product.category || "Uncategorized"}</p>
+                    </div>
+                    <p className="font-bold tabular-nums text-[#7a5f07]">{product.price} LE</p>
+                  </div>
+                  <div className="mt-3 flex min-h-7 flex-wrap gap-1">
+                    {(product.sizes || []).slice(0, 5).map((size) => (
+                      <span key={size} className="rounded-full bg-[#fff3cf] px-2 py-1 text-xs font-bold text-[#7a5f07]">{size}</span>
                     ))}
                   </div>
-                  <div className="flex gap-2 mb-2">
-                    <span className="font-bold text-[#FFCF67]">{product.price} LE</span>
-                    {product.discountPrice > 0 && (
-                      <span className="text-red-500 line-through text-sm">{product.discountPrice} LE</span>
-                    )}
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      className="px-3 py-1 rounded-lg bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95"
-                      onClick={() => openModal(product)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="px-3 py-1 rounded-lg bg-red-400 text-white font-bold hover:bg-red-600 transition active:scale-95"
-                      onClick={() => handleDelete(product._id)}
-                    >
-                      Delete
-                    </button>
+                  <div className="mt-4 flex gap-2">
+                    <AdminButton variant="secondary" icon={Edit3} onClick={() => openModal(product)}>Edit</AdminButton>
+                    <AdminButton variant="danger" icon={Trash2} onClick={() => setDeleteTarget(product)}>Delete</AdminButton>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-[#A4A4A4]">No products found.</div>
-          )}
-        </div>
-        {/* Modal for Add/Edit */}
-        <Transition show={modalOpen} as={React.Fragment}>
-          <Dialog as="div" className="fixed inset-0 z-50 flex items-center justify-center" onClose={() => setModalOpen(false)}>
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
-            <div
-              className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 w-full h-full mx-auto flex flex-col gap-4 animate-fade-in overflow-auto"
-              style={{ maxWidth: "100vw", maxHeight: "100vh" }}
-            >
-              <button
-                className="absolute top-3 right-3 text-2xl font-bold text-[#FFCF67] hover:text-[#917405] transition"
-                onClick={() => setModalOpen(false)}
-                aria-label="Close"
-              >
-                &times;
-              </button>
-              <h3 className="text-2xl font-bold text-[#2B2201] mb-4 text-center">{editMode ? "Edit Product" : "Add New Product"}</h3>
-              <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-8 w-full h-full overflow-auto">
-                {/* Left: Images */}
-                <div className="flex-1 flex flex-col gap-8 items-center justify-start">
-                  {/* Main Image */}
-                  <div className="w-full flex flex-col items-center">
-                    <div className="mb-2 font-semibold text-[#2B2201]">Main Image</div>
-                    <div className="relative group flex flex-col items-center">
-                      <div className="w-44 h-44 rounded-xl border-2 border-dashed border-[#FFCF67] flex items-center justify-center bg-[#FFFDF7] overflow-hidden shadow-sm">
-                        {form.mainImage ? (
-                          <img
-                            src={URL.createObjectURL(form.mainImage)}
-                            alt="main"
-                            className="object-cover w-full h-full"
-                          />
-                        ) : editMode && currentProduct?.mainImage ? (
-                          <Image
-                            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${currentProduct.mainImage}`}
-                            alt="main"
-                            width={180}
-                            height={180}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <span className="text-[#FFCF67] text-4xl">+</span>
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          onChange={e => setForm({ ...form, mainImage: e.target.files[0] })}
-                          required={!editMode}
-                          title="Choose main image"
-                        />
-                      </div>
-                      <span className="text-xs text-[#A4A4A4] mt-1">Click to {form.mainImage ? "change" : "add"} main image</span>
-                    </div>
-                  </div>
-                  {/* Product Images */}
-                  <div className="w-full flex flex-col items-center">
-                    <div className="mb-2 font-semibold text-[#2B2201]">Product Images</div>
-                    <div className="flex flex-wrap gap-3 justify-center">
-                      {/* صور backend (القديمة) */}
-                      {editMode && currentProduct?.images?.map((img, idx) => (
-                        <div key={idx} className="relative group">
-                          <Image
-                            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${img}`}
-                            alt={`img-${idx}`}
-                            width={90}
-                            height={90}
-                            className="rounded-lg object-cover border border-[#FFCF67]/30 shadow"
-                          />
-                          {/* زر حذف الصورة */}
-                          <button
-                            type="button"
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-90 hover:scale-110 transition"
-                            onClick={async () => {
-                              await handleDeleteImage(img);
-                            }}
-                            title="Remove"
-                          >×</button>
-                          <label
-                            className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#FFCF67] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-90 hover:scale-110 transition cursor-pointer"
-                            title="Replace"
-                          >
-                            ↻
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                if (e.target.files[0]) {
-                                  await handleReplaceImageApi(img, e.target.files[0]);
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
-                      ))}
-                      {/* صور جديدة قبل الحفظ */}
-                      {form.images && form.images.length > 0 &&
-                        form.images.map((img, idx) => (
-                          <div key={idx} className="relative group">
-                            <img
-                              src={URL.createObjectURL(img)}
-                              alt={`new-img-${idx}`}
-                              width={90}
-                              height={90}
-                              className="rounded-lg object-cover border border-[#FFCF67]/30 shadow"
-                            />
-                            <button
-                              type="button"
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-90 hover:scale-110 transition"
-                              onClick={() => handleRemoveNewImage(idx)}
-                              title="Remove"
-                            >×</button>
-                          </div>
-                        ))}
-                      {/* زر إضافة صورة جديدة */}
-                      <label className="cursor-pointer flex flex-col items-center justify-center w-20 h-20 border-2 border-dashed border-[#FFCF67] rounded-lg bg-[#FFFDF7] hover:bg-[#FFF6D4] transition">
-                        <span className="text-[#FFCF67] text-3xl">+</span>
-                        <input
-                          ref={imagesInputRef}
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="hidden"
-                          onChange={e => handleAddImages(e.target.files)}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                {/* Right: Details */}
-                <div className="flex-1 flex flex-col gap-4">
-                  <label className="font-semibold text-[#2B2201]">
-                    Title:
-                    <input
-                      type="text"
-                      className="w-full mt-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                      value={form.title}
-                      onChange={e => setForm({ ...form, title: e.target.value })}
-                      required
-                    />
-                  </label>
-                  <label className="font-semibold text-[#2B2201]">
-                    Description:
-                    <textarea
-                      className="w-full mt-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                      value={form.description}
-                      onChange={e => setForm({ ...form, description: e.target.value })}
-                      required
-                      rows={4}
-                    />
-                  </label>
-                  <div className="flex gap-2">
-                    <label className="font-semibold text-[#2B2201] flex-1">
-                      Price:
-                      <input
-                        type="number"
-                        className="w-full mt-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                        value={form.price}
-                        onChange={e => setForm({ ...form, price: e.target.value })}
-                        required
-                      />
-                    </label>
-                    <label className="font-semibold text-[#2B2201] flex-1">
-                      Discount Price:
-                      <input
-                        type="number"
-                        className="w-full mt-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                        value={form.discountPrice}
-                        onChange={e => setForm({ ...form, discountPrice: e.target.value })}
-                        required
-                      />
-                    </label>
-                  </div>
-                  <div className="flex gap-2">
-                    <label className="font-semibold text-[#2B2201] flex-1">
-                      In Stock:
-                      <select
-                        className="w-full mt-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                        value={form.inStock}
-                        onChange={e => setForm({ ...form, inStock: e.target.value === "true" })}
-                      >
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
-                      </select>
-                    </label>
-                    <label className="font-semibold text-[#2B2201] flex-1">
-                      Stock:
-                      <input
-                        type="number"
-                        className="w-full mt-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                        value={form.stock}
-                        onChange={e => setForm({ ...form, stock: e.target.value })}
-                        required
-                      />
-                    </label>
-                  </div>
-                  <label className="font-semibold text-[#2B2201]">
-                    Category:
-                    <input
-                      type="text"
-                      className="w-full mt-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                      value={form.category}
-                      onChange={e => setForm({ ...form, category: e.target.value })}
-                      required
-                    />
-                  </label>
-                  {/* Sizes */}
-                  <label className="font-semibold text-[#2B2201]">
-                    Sizes:
-                    <div className="flex gap-2 mt-1 flex-wrap">
-                      {form.sizes.map((size, idx) => (
-                        <span key={idx} className="px-2 py-1 rounded bg-[#FFCF67]/20 text-xs text-[#917405] flex items-center gap-1">
-                          {size}
-                          <button type="button" className="ml-1 text-red-500" onClick={() => handleRemoveSize(size)}>×</button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <input
-                        type="text"
-                        placeholder="Add size (e.g. 100x100)"
-                        className="flex-1 p-2 border-2 border-[#FFCF67] rounded-lg focus:ring-2 focus:ring-[#FFCF67] outline-none"
-                        onKeyDown={e => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddSize(e.target.value.trim());
-                            e.target.value = "";
-                          }
-                        }}
-                      />
-                    </div>
-                  </label>
-                  <button
-                    type="submit"
-                    className="mt-2 px-4 py-2 rounded-lg bg-[#FFCF67] text-white font-bold hover:bg-[#FFD96B] hover:text-[#2B2201] transition active:scale-95"
-                    disabled={adding || updating}
-                  >
-                    {adding || updating ? "Saving..." : editMode ? "Save Changes" : "Add"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </Dialog>
-        </Transition>
-        {/* Shipping Section */}
-        <div className="mb-8 p-4 bg-white rounded-xl shadow flex flex-col md:flex-row items-center gap-4">
-          <span className="font-bold text-[#FFCF67]">Shipping Cost:</span>
-          <span className={shippingLoading ? "animate-pulse font-semibold text-[#917405]" : ""}>
-            {shippingLoading
-              ? "Loading shipping..."
-              : shippingData
-              ? (shippingData.shippingCost === 0 ? "Free Shipping" : `${shippingData.shippingCost} LE`)
-              : "Not Set"}
-          </span>
-          <input
-            type="number"
-            min={0}
-            placeholder="Set Shipping Cost"
-            value={shippingInput}
-            onChange={e => setShippingInput(e.target.value)}
-            className="border p-2 rounded"
+              </motion.article>
+            ))}
+          </div>
+        ) : (
+          <AdminEmptyState
+            title="No products found"
+            description="Adjust your search or add a new product to the catalog."
+            icon={Package}
+            action={<AdminButton icon={Plus} onClick={() => openModal()}>Add product</AdminButton>}
           />
-          {shippingData ? (
-            <>
-              <button
-                className="bg-[#FFCF67] text-white px-4 py-2 rounded"
-                onClick={async () => {
-                  await updateShipping({ shippingCost: Number(shippingInput) });
-                  setShippingInput("");
-                  refetchShipping();
-                }}
-              >
-                Update
-              </button>
-              <button
-                className="bg-red-400 text-white px-4 py-2 rounded"
+        )}
+      </AdminPanel>
+
+      <AdminPanel className="p-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff3cf] text-[#7a5f07]">
+              <Settings2 className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h3 className="text-base font-bold text-[#211900]">Shipping Cost</h3>
+              <p className="text-sm text-[#695f4c]">
+                {shippingLoading
+                  ? "Loading shipping..."
+                  : shippingData
+                  ? shippingData.shippingCost === 0
+                    ? "Free Shipping"
+                    : `${shippingData.shippingCost} LE`
+                  : "Not set"}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="number"
+              min={0}
+              placeholder="Set shipping cost"
+              value={shippingInput}
+              onChange={(event) => setShippingInput(event.target.value)}
+              className={adminInputClass}
+            />
+            <AdminButton loading={creatingShipping || updatingShipping} onClick={saveShipping}>
+              {shippingData ? "Update" : "Add"}
+            </AdminButton>
+            {shippingData && (
+              <AdminButton
+                variant="danger"
+                loading={deletingShipping}
                 onClick={async () => {
                   await deleteShipping();
                   refetchShipping();
                 }}
               >
                 Delete
-              </button>
-            </>
-          ) : (
-            <button
-              className="bg-[#FFCF67] text-white px-4 py-2 rounded"
-              onClick={async () => {
-                await createShipping({ shippingCost: Number(shippingInput) });
-                setShippingInput("");
-                refetchShipping();
-              }}
-            >
-              Add
-            </button>
-          )}
+              </AdminButton>
+            )}
+          </div>
         </div>
-      </main>
+      </AdminPanel>
 
-    </div>
+      <AdminModal
+        open={modalOpen}
+        onClose={resetForm}
+        title={editMode ? "Edit Product" : "Add Product"}
+        size="full"
+      >
+        <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="grid content-start gap-5">
+            <ImageManager
+              editMode={editMode}
+              currentProduct={currentProduct}
+              form={form}
+              setForm={setForm}
+              imagesInputRef={imagesInputRef}
+              handleAddImages={handleAddImages}
+              refreshCurrentProduct={refreshCurrentProduct}
+              addProductImage={addProductImage}
+              replaceProductImage={replaceProductImage}
+              deleteProductImage={deleteProductImage}
+            />
+          </div>
+
+          <div className="grid content-start gap-4">
+            <AdminField label="Title">
+              <input className={adminInputClass} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
+            </AdminField>
+            <AdminField label="Description">
+              <textarea className={adminInputClass} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} rows={5} required />
+            </AdminField>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <AdminField label="Price">
+                <input type="number" className={adminInputClass} value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} required />
+              </AdminField>
+              <AdminField label="Discount Price">
+                <input type="number" className={adminInputClass} value={form.discountPrice} onChange={(event) => setForm({ ...form, discountPrice: event.target.value })} required />
+              </AdminField>
+              <AdminField label="In Stock">
+                <select className={adminInputClass} value={String(form.inStock)} onChange={(event) => setForm({ ...form, inStock: event.target.value === "true" })}>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </AdminField>
+              <AdminField label="Stock">
+                <input type="number" className={adminInputClass} value={form.stock} onChange={(event) => setForm({ ...form, stock: event.target.value })} required />
+              </AdminField>
+            </div>
+            <AdminField label="Category">
+              <input className={adminInputClass} value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} required />
+            </AdminField>
+            <AdminField label="Sizes">
+              <div className="flex min-h-11 flex-wrap gap-2 rounded-lg border border-[#d8ccb3] bg-[#fffdf8] p-2">
+                {form.sizes.map((size) => (
+                  <span key={size} className="inline-flex items-center gap-1 rounded-full bg-[#fff3cf] px-2 py-1 text-xs font-bold text-[#7a5f07]">
+                    {size}
+                    <button type="button" className="text-red-700" onClick={() => setForm({ ...form, sizes: form.sizes.filter((item) => item !== size) })} aria-label={`Remove ${size}`}>
+                      x
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  placeholder="Type size and press Enter"
+                  className="min-w-48 flex-1 bg-transparent px-1 text-sm outline-none"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleAddSize(event.currentTarget.value.trim());
+                      event.currentTarget.value = "";
+                    }
+                  }}
+                />
+              </div>
+            </AdminField>
+            <div className="flex justify-end gap-2 border-t border-[#eee2c9] pt-4">
+              <AdminButton variant="secondary" onClick={resetForm}>Cancel</AdminButton>
+              <AdminButton type="submit" loading={adding || updating}>{editMode ? "Save changes" : "Add product"}</AdminButton>
+            </div>
+          </div>
+        </form>
+      </AdminModal>
+
+      <AdminConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete product?"
+        message={`This will permanently remove "${deleteTarget?.title || "this product"}" from the catalog.`}
+        confirmLabel="Delete product"
+        loading={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteProduct}
+      />
+    </AdminShell>
   );
 };
+
+function ImageManager({
+  editMode,
+  currentProduct,
+  form,
+  setForm,
+  imagesInputRef,
+  handleAddImages,
+  refreshCurrentProduct,
+  addProductImage,
+  replaceProductImage,
+  deleteProductImage,
+}) {
+  return (
+    <AdminPanel className="p-4">
+      <h3 className="text-base font-bold text-[#211900]">Product Images</h3>
+      <div className="mt-4 grid gap-4">
+        <label className="block">
+          <span className="text-sm font-bold text-[#2d250d]">Main Image</span>
+          <div className="relative mt-2 aspect-square max-w-64 overflow-hidden rounded-lg border-2 border-dashed border-[#d8aa2e] bg-[#fffdf8]">
+            {form.mainImage ? (
+              <img src={URL.createObjectURL(form.mainImage)} alt="Main preview" className="h-full w-full object-cover" />
+            ) : editMode && currentProduct?.mainImage ? (
+              <Image src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${currentProduct.mainImage}`} alt="Main product" fill className="object-cover" />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-2 text-[#7a5f07]">
+                <Upload className="h-7 w-7" aria-hidden="true" />
+                <span className="text-sm font-bold">Upload main image</span>
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="absolute inset-0 cursor-pointer opacity-0"
+              onChange={(event) => setForm({ ...form, mainImage: event.target.files?.[0] || null })}
+              required={!editMode}
+              aria-label="Choose main product image"
+            />
+          </div>
+        </label>
+
+        <div>
+          <p className="text-sm font-bold text-[#2d250d]">Gallery Images</p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            {editMode && currentProduct?.images?.map((img) => (
+              <div key={img} className="relative h-20 w-20 overflow-hidden rounded-lg border border-[#e8dcc2]">
+                <Image src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${img}`} alt="Product gallery" fill className="object-cover" />
+                <button
+                  type="button"
+                  className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-md bg-red-600 text-white"
+                  onClick={async () => {
+                    await deleteProductImage({ id: currentProduct._id, imageName: img });
+                    await refreshCurrentProduct();
+                  }}
+                  aria-label="Remove image"
+                >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+                <label className="absolute bottom-1 left-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-[#d8aa2e] text-[#211900]" aria-label="Replace image">
+                  <Edit3 className="h-3.5 w-3.5" aria-hidden="true" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      if (!file) return;
+                      await replaceProductImage({ id: currentProduct._id, imageName: img, image: file });
+                      await refreshCurrentProduct();
+                    }}
+                  />
+                </label>
+              </div>
+            ))}
+            {form.images.map((img, index) => (
+              <div key={`${img.name}-${index}`} className="relative h-20 w-20 overflow-hidden rounded-lg border border-[#e8dcc2]">
+                <img src={URL.createObjectURL(img)} alt="New product gallery" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-md bg-red-600 text-white"
+                  onClick={() => setForm({ ...form, images: form.images.filter((_, itemIndex) => itemIndex !== index) })}
+                  aria-label="Remove image"
+                >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+            <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-[#d8aa2e] bg-[#fffdf8] text-[#7a5f07]">
+              <Plus className="h-5 w-5" aria-hidden="true" />
+              <span className="text-xs font-bold">Add</span>
+              <input
+                ref={imagesInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(event) => handleAddImages(event.target.files)}
+              />
+            </label>
+          </div>
+          {editMode && currentProduct && (
+            <label className="mt-4 inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#d8ccb3] bg-white px-4 text-sm font-bold text-[#3c310f] hover:border-[#c49a22] hover:bg-[#fff9ea]">
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Upload directly
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  await addProductImage({ id: currentProduct._id, image: file });
+                  await refreshCurrentProduct();
+                }}
+              />
+            </label>
+          )}
+        </div>
+      </div>
+    </AdminPanel>
+  );
+}
 
 export default Products;

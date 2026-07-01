@@ -1,115 +1,113 @@
 "use client";
+
 import React, { useState } from "react";
-import { useAdminLoginMutation } from "@/app/features/Api/AuthApi";
-import { useRouter } from "next/navigation";
-import { setAuthToken } from "@/app/utils/page";
-import Loading from "@/app/components/loading/page";
+import Link from "next/link";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { useAdminLoginMutation } from "@/app/features/Api/AuthApi";
+import { setAuthToken } from "@/app/utils/page";
+import {
+  AdminAuthShell,
+  AdminButton,
+  AdminField,
+  adminInputClass,
+} from "@/app/components/Admin/AdminComponents";
 
 const AdminLogin = () => {
   const [adminLogin, { isLoading }] = useAdminLoginMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const router = useRouter();
 
   const validate = () => {
     const errs = {};
-    if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = "Valid email is required";
-    if (!password) errs.password = "Password is required";
+    if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = "Enter a valid admin email.";
+    if (!password) errs.password = "Password is required.";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (event) => {
+    event.preventDefault();
     if (!validate()) return;
     try {
       const res = await adminLogin({ email, password }).unwrap();
       setAuthToken(res.token);
-      // Decode token to get role (client-side only, for UI logic)
       const payload = JSON.parse(atob(res.token.split(".")[1]));
       if (payload.role === "admin") {
         localStorage.setItem("role", "admin");
-        toast.success("Login successful!");
+        toast.success("Login successful.");
         router.push("/Adminn/dashh");
       } else {
-        toast.error("You are not admin!");
+        toast.error("This account does not have admin access.");
       }
     } catch (err) {
-      toast.error(err?.data?.message || "Login failed");
+      toast.error(err?.data?.message || "Login failed.");
     }
   };
 
-  if (isLoading) return <Loading />;
-
   return (
-    <div className="flex items-center text-black justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6 sm:p-8">
-        <h2 className="text-2xl font-bold text-center mb-6 text-indigo-600">
-          Admin Login
-        </h2>
-        <form onSubmit={handleLogin} className="flex flex-col space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-gray-700 text-sm font-medium mb-2"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200"
-              required
-              disabled={isLoading}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email}</p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-gray-700 text-sm font-medium mb-2"
-            >
-              Password
-            </label>
+    <AdminAuthShell
+      title="Admin sign in"
+      subtitle="Sign in to manage products, orders, requests, media, and users."
+    >
+      <form onSubmit={handleLogin} className="grid gap-4" noValidate>
+        <AdminField label="Email" error={errors.email}>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className={adminInputClass}
+            autoComplete="email"
+            disabled={isLoading}
+          />
+        </AdminField>
+        <AdminField label="Password" error={errors.password}>
+          <div className="relative">
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition duration-200"
-              required
+              onChange={(event) => setPassword(event.target.value)}
+              className={`${adminInputClass} pr-12`}
+              autoComplete="current-password"
               disabled={isLoading}
             />
-            {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password}</p>
-            )}
+            <button
+              type="button"
+              className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--brand-olive)] transition-colors hover:bg-[#f2ead7]"
+              onClick={() => setShowPassword((value) => !value)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+            </button>
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-200 disabled:bg-indigo-400 disabled:cursor-not-allowed"
-            disabled={isLoading}
+        </AdminField>
+        <AdminButton type="submit" icon={LogIn} loading={isLoading} className="w-full">
+          Sign in
+        </AdminButton>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eee2c9] pt-4 text-sm font-semibold">
+          <Link
+            href="/Adminn/forgotPassword"
+            className="inline-flex min-h-11 items-center text-[var(--brand-olive)] transition-colors hover:text-[var(--brand-ink)] hover:underline"
           >
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
-          {/* forget password */}
-          <div className="text-sm text-gray-600 text-center mt-4">
-            <a href="/Adminn/forgotPassword" className="hover:underline">
-              Forgot your password?
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
+            Forgot password?
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center text-[var(--brand-muted)] transition-colors hover:text-[var(--brand-ink)] hover:underline"
+          >
+            Back to store
+          </Link>
+        </div>
+      </form>
+    </AdminAuthShell>
   );
 };
 

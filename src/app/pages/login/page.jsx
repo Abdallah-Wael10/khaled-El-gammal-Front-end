@@ -1,135 +1,125 @@
 "use client";
+
 import React, { useState } from "react";
+import Link from "next/link";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useUserLoginMutation } from "@/app/features/Api/AuthApi";
 import { useRouter } from "next/navigation";
 import { setAuthToken } from "@/app/utils/page";
 import { toast } from "react-hot-toast";
+import {
+  AuthButton,
+  AuthField,
+  AuthLink,
+  UserAuthShell,
+  authInputClass,
+} from "@/app/components/Auth/AuthComponents";
 
 const Login = () => {
   const [login, { isLoading }] = useUserLoginMutation();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const router = useRouter();
 
   const validate = () => {
     const errs = {};
-    if (!/^\S+@\S+\.\S+$/.test(form.email))
-      errs.email = "Valid email is required";
-    if (!form.password) errs.password = "Password is required";
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) errs.email = "Enter a valid email address.";
+    if (!form.password) errs.password = "Password is required.";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    setForm({ ...form, [event.target.name]: event.target.value });
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     if (!validate()) return;
     try {
       const res = await login(form).unwrap();
       setAuthToken(res.token);
-      toast.success("Login successful!");
+      toast.success("Welcome back!");
       router.push("/");
     } catch (err) {
-      toast.error(err?.data?.message || "Login failed");
+      toast.error(err?.data?.message || "Login failed. Check your email and password.");
     }
   };
 
   return (
-    <div className="flex items-center text-black justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6 sm:p-8">
-        <h2 className="text-2xl font-bold text-center mb-6 text-[#FFCF67]">
-          Login
-        </h2>
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col space-y-4"
-        >
-          {/* Email Input */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-gray-700 text-sm font-medium mb-2"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFCF67] focus:outline-none transition duration-200"
-              required
-            />
-          </div>
+    <UserAuthShell
+      title="Sign in"
+      subtitle="Access your account to shop handcrafted pieces and manage your experience."
+      footer={
+        <div className="flex flex-col gap-3 text-center text-sm text-[var(--brand-muted)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:text-left">
+          <p>
+            New here?{" "}
+            <AuthLink href="/pages/signUp" className="min-h-0 font-bold">
+              Create an account
+            </AuthLink>
+          </p>
+          <AuthLink href="/" className="justify-center sm:justify-start">
+            Back to store
+          </AuthLink>
+        </div>
+      }
+    >
+      <form onSubmit={handleSubmit} className="grid gap-4">
+        <AuthField label="Email" htmlFor="email" error={errors.email}>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            className={authInputClass}
+            autoComplete="email"
+            disabled={isLoading}
+          />
+        </AuthField>
 
-          {errors.email && (
-            <p className="text-red-500">{errors.email}</p>
-          )}
-
-          {/* Password Input */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-gray-700 text-sm font-medium mb-2"
-            >
-              Password
-            </label>
+        <AuthField label="Password" htmlFor="password" error={errors.password}>
+          <div className="relative">
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={form.password}
               onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFCF67] focus:outline-none transition duration-200"
-              required
+              className={`${authInputClass} pr-12`}
+              autoComplete="current-password"
+              disabled={isLoading}
             />
+            <button
+              type="button"
+              className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--brand-olive)] transition-colors hover:bg-[var(--brand-gold-soft)]"
+              onClick={() => setShowPassword((value) => !value)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
           </div>
+        </AuthField>
 
-          {errors.password && (
-            <p className="text-red-500">{errors.password}</p>
-          )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-[#FFCF67] text-white font-semibold rounded-lg hover:bg-[#FFB84D] transition duration-200 disabled:bg-[#FFB84D] disabled:cursor-not-allowed"
-            disabled={isLoading}
+        <div className="flex justify-end">
+          <Link
+            href="/pages/forgotPassword"
+            className="text-sm font-semibold text-[var(--brand-olive)] transition-colors hover:text-[var(--brand-ink)] hover:underline"
           >
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
-          <p className="text-sm text-gray-500 text-center mt-4">
-            Don't have an account?{" "}
-            <a
-              href="/pages/signUp"
-              className="text-[#FFCF67] hover:underline"
-            >
-              Register here
-            </a>
-          </p>
-          <p className="text-sm text-gray-500 text-center mt-4">
-            Forget Your Password?{" "}
-            <a
-              href="/pages/forgotPassword"
-              className="text-[#FFCF67] hover:underline"
-            >
-              Reset it here
-            </a>
-          </p>
-          <p className="text-sm text-gray-500 text-center mt-4">
-            go back to{" "}
-            <a href="/" className="text-[#FFCF67] hover:underline">
-              Home
-            </a>
-            ?{" "}
-          </p>
-        </form>
-      </div>
-    </div>
+            Forgot password?
+          </Link>
+        </div>
+
+        <AuthButton type="submit" icon={LogIn} loading={isLoading} className="w-full">
+          Sign in
+        </AuthButton>
+      </form>
+    </UserAuthShell>
   );
 };
 
