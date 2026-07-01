@@ -212,6 +212,4 @@ This project is licensed under the MIT License.
 
 ---
 
-**Feel
-
 **Feel free to fork, contribute, or open issues!**
