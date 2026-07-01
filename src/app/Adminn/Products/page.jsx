@@ -3,7 +3,13 @@
 import React, { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { Edit3, Loader2, Package, Plus, Settings2, Trash2, Upload } from "lucide-react";
+import { Edit3, Loader2, Package, Plus, Settings2, Tag, Trash2, Upload, X } from "lucide-react";
+import {
+  useAddCategoryMutation,
+  useDeleteCategoryMutation,
+  useGetCategoriesQuery,
+  useUpdateCategoryMutation,
+} from "@/app/features/Api/CategoryApi";
 import {
   useCreateShippingMutation,
   useDeleteShippingMutation,
@@ -59,6 +65,10 @@ const emptyForm = {
 const Products = () => {
   const { checking } = useRequireAdmin();
   const { data: products = [], isLoading, refetch } = useGetProductsQuery();
+  const { data: categories = [], isLoading: categoriesLoading, refetch: refetchCategories } = useGetCategoriesQuery();
+  const [addCategory, { isLoading: addingCategory }] = useAddCategoryMutation();
+  const [updateCategory, { isLoading: updatingCategory }] = useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: deletingCategory }] = useDeleteCategoryMutation();
   const [addProduct, { isLoading: adding }] = useAddProductMutation();
   const [updateProduct, { isLoading: updating }] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
@@ -79,7 +89,15 @@ const Products = () => {
   const [search, setSearch] = useState("");
   const [showInStockOnly, setShowInStockOnly] = useState(false);
   const [shippingInput, setShippingInput] = useState("");
+  const [categoryInput, setCategoryInput] = useState("");
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [editingCategoryName, setEditingCategoryName] = useState("");
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
   const imagesInputRef = useRef(null);
+
+  const categoryNames = useMemo(() => categories.map((cat) => cat.name), [categories]);
+  const legacyCategory =
+    form.category && !categoryNames.includes(form.category) ? form.category : null;
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -123,6 +141,14 @@ const Products = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!form.category) {
+      alert("Please select a category");
+      return;
+    }
+    if (legacyCategory) {
+      alert(`Category "${legacyCategory}" is not in the catalog. Add or rename it in Product Categories first.`);
+      return;
+    }
     const price = Number(form.price);
     const discountAmount = Number(form.discountPrice) || 0;
     if (discountAmount > 0 && discountAmount >= price) {
@@ -176,6 +202,59 @@ const Products = () => {
     else await createShipping({ shippingCost: value });
     setShippingInput("");
     refetchShipping();
+  };
+
+  const handleAddCategory = async () => {
+    const name = categoryInput.trim();
+    if (!name) return;
+    try {
+      await addCategory({ name }).unwrap();
+      setCategoryInput("");
+      refetchCategories();
+    } catch (err) {
+      alert(err?.data?.message || "Error adding category");
+    }
+  };
+
+  const startEditCategory = (category) => {
+    setEditingCategoryId(category._id);
+    setEditingCategoryName(category.name);
+  };
+
+  const cancelEditCategory = () => {
+    setEditingCategoryId(null);
+    setEditingCategoryName("");
+  };
+
+  const saveEditCategory = async () => {
+    const name = editingCategoryName.trim();
+    const category = categories.find((item) => item._id === editingCategoryId);
+    if (!name || !category) return;
+    try {
+      await updateCategory({ id: category._id, name }).unwrap();
+      if (form.category === category.name) {
+        setForm((current) => ({ ...current, category: name }));
+      }
+      cancelEditCategory();
+      refetchCategories();
+      refetch();
+    } catch (err) {
+      alert(err?.data?.message || "Error updating category");
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!deleteCategoryTarget) return;
+    try {
+      await deleteCategory(deleteCategoryTarget._id).unwrap();
+      if (form.category === deleteCategoryTarget.name) {
+        setForm((current) => ({ ...current, category: "" }));
+      }
+      setDeleteCategoryTarget(null);
+      refetchCategories();
+    } catch (err) {
+      alert(err?.data?.message || "Error deleting category");
+    }
   };
 
   if (checking) return <Loading message="Checking admin access..." detail="Opening product management" />;
@@ -232,6 +311,21 @@ const Products = () => {
                     <div className="min-w-0">
                       <h3 className="line-clamp-1 text-base font-bold text-[#211900]">{product.title}</h3>
                       <p className="mt-1 text-sm text-[#695f4c]">{product.category || "Uncategorized"}</p>
+                      {(() => {
+                        const remaining = Number(product.stock) || 0;
+                        const total = Number(product.initialStock ?? product.stock) || 0;
+                        const isOut = remaining <= 0 || !product.inStock;
+                        const isLow = !isOut && total > 0 && remaining / total <= 0.25;
+                        return (
+                          <p
+                            className={`mt-1 text-sm font-bold tabular-nums ${
+                              isOut ? "text-red-700" : isLow ? "text-amber-700" : "text-[#5f512d]"
+                            }`}
+                          >
+                            {remaining} left of {total}
+                          </p>
+                        );
+                      })()}
                     </div>
                     <p className="font-bold tabular-nums text-[#7a5f07]">{product.price} LE</p>
                   </div>
@@ -256,6 +350,115 @@ const Products = () => {
             action={<AdminButton icon={Plus} onClick={() => openModal()}>Add product</AdminButton>}
           />
         )}
+      </AdminPanel>
+
+      <AdminPanel className="mb-6 p-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff3cf] text-[#7a5f07]">
+              <Tag className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h3 className="text-base font-bold text-[#211900]">Product Categories</h3>
+              <p className="text-sm text-[#695f4c]">
+                {categoriesLoading
+                  ? "Loading categories..."
+                  : categories.length
+                  ? `${categories.length} categor${categories.length === 1 ? "y" : "ies"} available for products and business inquiries`
+                  : "No categories yet — add one before creating products"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              placeholder="New category name"
+              value={categoryInput}
+              onChange={(event) => setCategoryInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  handleAddCategory();
+                }
+              }}
+              className={adminInputClass}
+              disabled={addingCategory}
+            />
+            <AdminButton loading={addingCategory} onClick={handleAddCategory}>
+              Add category
+            </AdminButton>
+          </div>
+
+          {categoriesLoading ? (
+            <Loading variant="inline" message="Loading categories..." />
+          ) : categories.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <div
+                  key={category._id}
+                  className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-[#e8dcc2] bg-[#fffdf8] px-2 py-1"
+                >
+                  {editingCategoryId === category._id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editingCategoryName}
+                        onChange={(event) => setEditingCategoryName(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            saveEditCategory();
+                          }
+                          if (event.key === "Escape") cancelEditCategory();
+                        }}
+                        className="min-w-28 rounded-md border border-[#d8ccb3] bg-white px-2 py-1 text-sm outline-none focus:border-[#d8aa2e]"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-[#7a5f07] hover:bg-[#fff3cf]"
+                        onClick={saveEditCategory}
+                        disabled={updatingCategory}
+                        aria-label="Save category name"
+                      >
+                        {updatingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit3 className="h-4 w-4" />}
+                      </button>
+                      <button
+                        type="button"
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-[#695f4c] hover:bg-[#f2ead7]"
+                        onClick={cancelEditCategory}
+                        aria-label="Cancel edit"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="px-1 text-sm font-bold text-[#211900]">{category.name}</span>
+                      <button
+                        type="button"
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-[#7a5f07] hover:bg-[#fff3cf]"
+                        onClick={() => startEditCategory(category)}
+                        aria-label={`Edit ${category.name}`}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-red-700 hover:bg-red-50"
+                        onClick={() => setDeleteCategoryTarget(category)}
+                        aria-label={`Delete ${category.name}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </AdminPanel>
 
       <AdminPanel className="p-4">
@@ -366,7 +569,41 @@ const Products = () => {
               </AdminField>
             </div>
             <AdminField label="Category">
-              <input className={adminInputClass} value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} required />
+              <select
+                className={adminInputClass}
+                value={form.category}
+                onChange={(event) => setForm({ ...form, category: event.target.value })}
+                required
+                disabled={categoriesLoading || categories.length === 0}
+              >
+                <option value="" disabled hidden>
+                  {categoriesLoading
+                    ? "Loading categories..."
+                    : categories.length
+                    ? "Select category"
+                    : "Add a category first"}
+                </option>
+                {legacyCategory && (
+                  <option value={legacyCategory} disabled>
+                    {legacyCategory} (not in catalog)
+                  </option>
+                )}
+                {categories.map((category) => (
+                  <option key={category._id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              {legacyCategory && (
+                <p className="mt-1 text-xs font-semibold text-red-600">
+                  This product uses a legacy category. Add or rename it in Product Categories above.
+                </p>
+              )}
+              {!categoriesLoading && categories.length === 0 && (
+                <p className="mt-1 text-xs text-[#695f4c]">
+                  Add at least one category before creating products.
+                </p>
+              )}
             </AdminField>
             <AdminField label="Sizes">
               <div className="flex min-h-11 flex-wrap gap-2 rounded-lg border border-[#d8ccb3] bg-[#fffdf8] p-2">
@@ -408,6 +645,16 @@ const Products = () => {
         loading={deleting}
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleDeleteProduct}
+      />
+
+      <AdminConfirmDialog
+        open={Boolean(deleteCategoryTarget)}
+        title="Delete category?"
+        message={`This will remove "${deleteCategoryTarget?.name || "this category"}" from the catalog. Categories in use by products cannot be deleted.`}
+        confirmLabel="Delete category"
+        loading={deletingCategory}
+        onCancel={() => setDeleteCategoryTarget(null)}
+        onConfirm={handleDeleteCategory}
       />
     </AdminShell>
   );

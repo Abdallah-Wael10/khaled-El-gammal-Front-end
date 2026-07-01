@@ -14,12 +14,13 @@ import {
   AdminPanel,
   AdminShell,
   AdminStatCard,
-  AdminStatusBadge,
   adminTdClass,
   adminThClass,
   adminTableClass,
 } from "@/app/components/Admin/AdminComponents";
+import OrderStatusBadge from "@/app/components/Admin/OrderStatusBadge";
 import { useRequireAdmin } from "@/app/hooks/useRequireAdmin";
+import { isOpenOrder } from "@/app/utils/orderStatus";
 
 const Dashboard = () => {
   const { checking, token } = useRequireAdmin();
@@ -48,7 +49,7 @@ const Dashboard = () => {
   }, [baseUrl, token]);
 
   const stats = useMemo(() => {
-    const pendingOrders = checkouts.filter((order) => order.status !== "active").length;
+    const pendingOrders = checkouts.filter((order) => isOpenOrder(order.status)).length;
     const outOfStock = products.filter((product) => !product.inStock || Number(product.stock) <= 0).length;
 
     return [
@@ -160,7 +161,7 @@ const Dashboard = () => {
                         <div className="text-xs text-[#695f4c]">{order.userInfo?.email}</div>
                       </td>
                       <td className={adminTdClass}>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-"}</td>
-                      <td className={adminTdClass}><AdminStatusBadge status={order.status} /></td>
+                      <td className={adminTdClass}><OrderStatusBadge status={order.status} /></td>
                       <td className={`${adminTdClass} font-bold tabular-nums`}>{order.total || 0} LE</td>
                     </motion.tr>
                   ))}

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useAddBusinessMutation } from "@/app/features/Api/BusinessFormApi";
-import { useGetProductsQuery } from "@/app/features/Api/ProductApi";
+import { useGetCategoriesQuery } from "@/app/features/Api/CategoryApi";
 import Loading from "../loading/page";
 import { toast } from "react-hot-toast";
 import { fadeUp, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
@@ -41,12 +41,12 @@ const BusinessForm = () => {
     category: "",
   });
 
-  const { data: products = [], isLoading: productsLoading } = useGetProductsQuery();
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
 
-  const categories = useMemo(() => {
-    const cats = products.map((p) => p.category?.trim()).filter(Boolean);
-    return Array.from(new Set(cats));
-  }, [products]);
+  const categoryNames = useMemo(
+    () => categories.map((category) => category.name).filter(Boolean),
+    [categories]
+  );
 
   const validateForm = () => {
     let isValid = true;
@@ -156,14 +156,18 @@ const BusinessForm = () => {
             className={`premium-input w-full px-4 py-3 font-semibold ${errors.category ? "border-red-500" : ""}`}
             value={selectedCategory}
             onChange={handleOptionChange}
-            disabled={isLoading || productsLoading}
+            disabled={isLoading || categoriesLoading}
             aria-invalid={Boolean(errors.category)}
           >
             <option value="" disabled hidden>
-              {productsLoading ? "Loading categories..." : "Select Category"}
+              {categoriesLoading
+                ? "Loading categories..."
+                : categoryNames.length
+                ? "Select Category"
+                : "No categories available"}
             </option>
-            {categories.map((category, index) => (
-              <option className="bg-white text-black" key={index} value={category}>
+            {categoryNames.map((category) => (
+              <option className="bg-white text-black" key={category} value={category}>
                 {category}
               </option>
             ))}
@@ -218,7 +222,7 @@ const BusinessForm = () => {
 
         <motion.button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || categoriesLoading || categoryNames.length === 0}
           className="premium-button mt-8 flex w-full items-center justify-center px-6 text-lg disabled:cursor-not-allowed disabled:opacity-60"
           {...scaleTap}
         >

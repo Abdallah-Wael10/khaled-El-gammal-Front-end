@@ -18,20 +18,39 @@ import dogright from "./images/dogright.svg";
 import draw from "./images/draw.svg";
 import Cart from "./components/Cart/page";
 import { useGetProductsQuery } from "./features/Api/ProductApi";
-import { fadeUp, pageReveal, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
+import { fadeUp, pageReveal, scaleTap, staggerContainer, staggerItem, viewportOnce } from "@/app/lib/motion";
 
 const socialLinks = [
   { href: "tel:+201159227861", icon: wp, label: "Call or WhatsApp" },
-  { href: "https://www.instagram.com", icon: insta, label: "Instagram" },
+  { href: "https://www.instagram.com/khan_khaledelgamal?utm_source=qr", icon: insta, label: "Instagram" },
   { href: "https://www.facebook.com/?locale=ar_AR", icon: facebook, label: "Facebook" },
   { href: "https://maps.app.goo.gl/fusJbKjX4nHmefsC8?g_st=iw", icon: map, label: "Location" },
 ];
 
+function ProductCardSkeleton() {
+  return (
+    <div
+      className="w-full max-w-xs animate-pulse overflow-hidden rounded-2xl border border-[#ead9a5] bg-white shadow-[0_10px_30px_rgba(43,34,1,0.08)]"
+      aria-hidden="true"
+    >
+      <div className="aspect-[4/3] w-full bg-[#fff1bf]/60" />
+      <div className="space-y-3 px-4 py-4">
+        <div className="h-5 w-3/4 rounded bg-[#fff1bf]/70" />
+        <div className="h-4 w-1/3 rounded bg-[#fff1bf]/50" />
+        <div className="h-4 w-full rounded bg-[#fff1bf]/40" />
+        <div className="h-4 w-5/6 rounded bg-[#fff1bf]/40" />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
-  const { data: Products = [] } = useGetProductsQuery();
+  const { data: Products = [], isLoading: isLoadingProducts } = useGetProductsQuery();
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const randomProducts = useMemo(() => {
+    if (!Products.length) return [];
+
     return [...Products]
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
@@ -117,14 +136,14 @@ export default function Home() {
       </motion.section>
 
       <section className="bg-white py-14">
-        <motion.div
-          className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-5 lg:px-8"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.16 }}
-        >
-          <motion.div variants={staggerItem} className="flex w-full items-center justify-center gap-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-5 lg:px-8">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="flex w-full items-center justify-center gap-6"
+          >
             <Image src={draw} alt="" className="hidden max-w-[260px] opacity-70 md:block" aria-hidden="true" priority />
             <div className="text-center">
               <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#9b8b64]">Selected pieces</span>
@@ -133,29 +152,51 @@ export default function Home() {
             <Image src={draw} alt="" className="hidden max-w-[260px] -scale-x-100 opacity-70 lg:block" aria-hidden="true" priority />
           </motion.div>
 
-          <motion.div variants={staggerContainer} className="grid w-full grid-cols-1 justify-items-center gap-7 sm:grid-cols-2 lg:grid-cols-4">
-            {randomProducts.map((product) => (
-              <motion.div key={product._id} variants={staggerItem} className="w-full max-w-xs">
-                <Card
-                  id={product._id}
-                  image={`${baseUrl}/uploads/${product.mainImage}`}
-                  title={product.title}
-                  price={product.price}
-                  description={product.description}
-                  discountPrice={product.discountPrice}
-                  inStock={product.inStock}
-                  stock={product.stock}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          {isLoadingProducts ? (
+            <div
+              className="grid w-full grid-cols-1 justify-items-center gap-7 sm:grid-cols-2 lg:grid-cols-4"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              {Array.from({ length: 4 }).map((_, index) => (
+                <ProductCardSkeleton key={index} />
+              ))}
+              <span className="sr-only">Loading trending products</span>
+            </div>
+          ) : (
+            <motion.div
+              key={randomProducts.map((product) => product._id).join("-") || "products-empty"}
+              className="grid w-full grid-cols-1 justify-items-center gap-7 sm:grid-cols-2 lg:grid-cols-4"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              whileInView="visible"
+              viewport={viewportOnce}
+            >
+              {randomProducts.map((product) => (
+                <motion.div key={product._id} variants={staggerItem} className="w-full max-w-xs">
+                  <Card
+                    id={product._id}
+                    image={`${baseUrl}/uploads/${product.mainImage}`}
+                    title={product.title}
+                    price={product.price}
+                    description={product.description}
+                    discountPrice={product.discountPrice}
+                    inStock={product.inStock}
+                    stock={product.stock}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
 
-          <motion.div variants={staggerItem} {...scaleTap}>
+          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={viewportOnce} {...scaleTap}>
             <Link href="/pages/shop" className="premium-button inline-flex min-h-12 items-center justify-center px-8 text-sm">
               View Full Products
             </Link>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       <section className="premium-section py-14">

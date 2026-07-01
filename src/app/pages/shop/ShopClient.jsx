@@ -11,15 +11,18 @@ import Loading from "@/app/components/loading/page";
 import Cart from "@/app/components/Cart/page";
 import { motion } from "motion/react";
 import { fadeUp, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
+import { useGetCategoriesQuery } from "@/app/features/Api/CategoryApi";
+
 import { getSellingPrice, hasDiscount } from "@/app/utils/pricing";
 
 const ShopClient = ({ initialProducts = [], initialError }) => {
   const products = initialProducts;
+  const { data: apiCategories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
 
   const categories = useMemo(() => {
-    const cats = products.map((p) => p.category).filter(Boolean);
-    return ["All Products", ...Array.from(new Set(cats))];
-  }, [products]);
+    const names = apiCategories.map((category) => category.name).filter(Boolean);
+    return ["All Products", ...names];
+  }, [apiCategories]);
 
   const [selectedCategory, setSelectedCategory] = useState("All Products");
   const [selectedPrice, setSelectedPrice] = useState("");
@@ -104,12 +107,17 @@ const ShopClient = ({ initialProducts = [], initialError }) => {
               className="premium-input w-full px-4 py-3 font-semibold"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
+              disabled={categoriesLoading}
             >
-              {categories.map((category, index) => (
-                <option className="bg-white text-black" key={index} value={category}>
-                  {category}
-                </option>
-              ))}
+              {categoriesLoading ? (
+                <option value="All Products">Loading categories...</option>
+              ) : (
+                categories.map((category) => (
+                  <option className="bg-white text-black" key={category} value={category}>
+                    {category}
+                  </option>
+                ))
+              )}
             </select>
           </label>
 
