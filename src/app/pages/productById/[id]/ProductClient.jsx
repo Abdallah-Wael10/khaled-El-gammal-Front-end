@@ -112,9 +112,71 @@ const ProductClient = ({ id }) => {
     <div className="bg-white min-h-screen">
       <Nav1 />
       <Cart />
+      
+      {/* Image Preview Modal */}
+      <Transition appear show={previewOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setPreviewOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/90" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="relative max-w-6xl w-full max-h-[90vh] flex items-center justify-center">
+                  <button
+                    onClick={() => setPreviewOpen(false)}
+                    className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-[#FFCF67] transition-all"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                  <Image
+                    src={previewImg}
+                    alt="Preview"
+                    width={1200}
+                    height={1200}
+                    className="object-contain max-h-[90vh] w-auto rounded-lg"
+                    quality={95}
+                  />
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
       <section className="w-full flex flex-col md:flex-row justify-center items-center gap-10 py-10">
         {/* Product Image & Gallery */}
         <div className="w-[95vw] md:w-[45%] flex flex-col items-center">
+          {/* Back Button */}
+          <button
+            onClick={() => router.back()}
+            className="self-start mb-4 flex items-center gap-2 px-4 py-2 bg-white border border-[#FFCF67] text-[#FFCF67] rounded-lg font-semibold transition-all duration-300 hover:bg-[#FFCF67] hover:text-white active:scale-95"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Shop
+          </button>
+          
           {/* Swiper Slider */}
           <Swiper
             modules={[Navigation, Pagination]}
@@ -126,20 +188,20 @@ const ProductClient = ({ id }) => {
             style={{ maxWidth: "100%" }}
           >
             {imagesArr.map((img, idx) => (
-              <SwiperSlide key={idx}>
+              <SwiperSlide key={idx} className="flex items-center justify-center bg-white">
                 <Image
                   src={`${baseUrl}/uploads/${img}`}
                   width={700}
                   height={700}
                   alt={product.title}
-                  className="object-cover w-full h-[340px] md:h-[490px] cursor-pointer transition-transform duration-300 hover:scale-105 bg-white"
+                  className="object-contain w-full h-[340px] md:h-[490px] cursor-pointer transition-transform duration-300 hover:scale-105"
                   priority={idx === 0}
-                  quality={100}
+                  quality={90}
                   onClick={() => {
                     setPreviewImg(`${baseUrl}/uploads/${img}`);
                     setPreviewOpen(true);
                   }}
-                  style={{ imageRendering: "auto" }}
+                  style={{ maxHeight: "100%", width: "auto", margin: "0 auto" }}
                 />
               </SwiperSlide>
             ))}
@@ -161,7 +223,7 @@ const ProductClient = ({ id }) => {
                   alt={`thumb-${idx}`}
                   width={70}
                   height={70}
-                  className="object-contain rounded-md max-h-[60px] max-w-[60px]"
+                  className="object-cover rounded-md w-[60px] h-[60px]"
                 />
               </button>
             ))}

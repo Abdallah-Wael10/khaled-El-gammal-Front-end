@@ -84,7 +84,7 @@ export default function Home() {
           <div className="w-[100%] h-max relative flex items-center justify-end pr-5">
             {/* Blurred background layer */}
             <div className="w-full absolute inset-0 rounded-r-full bg-[#FFCF67]/30 blur-2xl z-0" />
-
+  
             {/* Sharp image layer */}
             <div className="relative z-10">
               <Image src={dogleft} alt="dog icon left" />
