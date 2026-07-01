@@ -23,7 +23,7 @@ import { fadeUp, pageReveal, scaleTap, staggerContainer, staggerItem, viewportOn
 const socialLinks = [
   { href: "tel:+201159227861", icon: wp, label: "Call or WhatsApp" },
   { href: "https://www.instagram.com/khan_khaledelgamal?utm_source=qr", icon: insta, label: "Instagram" },
-  { href: "https://www.facebook.com/?locale=ar_AR", icon: facebook, label: "Facebook" },
+  { href: "https://www.instagram.com/khan_khaledelgamal?utm_source=qr", icon: facebook, label: "Facebook" },
   { href: "https://maps.app.goo.gl/fusJbKjX4nHmefsC8?g_st=iw", icon: map, label: "Location" },
 ];
 

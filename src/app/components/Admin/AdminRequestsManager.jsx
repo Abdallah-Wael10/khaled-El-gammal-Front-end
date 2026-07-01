@@ -21,6 +21,19 @@ import {
   adminTableClass,
 } from "@/app/components/Admin/AdminComponents";
 
+function formatSubmittedAt(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function AdminRequestsManager({
   title,
   eyebrow = "Requests",
@@ -41,8 +54,11 @@ export function AdminRequestsManager({
 
   const filteredData = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return data || [];
-    return (data || []).filter((lead) =>
+    const sorted = [...(data || [])].sort(
+      (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+    if (!query) return sorted;
+    return sorted.filter((lead) =>
       [lead.name, lead.email, lead.phone, lead.category, lead.comment].some((value) =>
         String(value || "").toLowerCase().includes(query)
       )
@@ -85,6 +101,7 @@ export function AdminRequestsManager({
                 <tr>
                   <th className={adminThClass}>Name</th>
                   <th className={adminThClass}>Contact</th>
+                  <th className={adminThClass}>Submitted</th>
                   <th className={adminThClass}>Status</th>
                   {imageField && <th className={adminThClass}>Images</th>}
                   <th className={`${adminThClass} text-right`}>Action</th>
@@ -100,6 +117,15 @@ export function AdminRequestsManager({
                     <td className={adminTdClass}>
                       <div>{lead.email || "-"}</div>
                       <div className="text-xs text-[#695f4c]">{lead.phone || "-"}</div>
+                    </td>
+                    <td className={adminTdClass}>
+                      <time
+                        dateTime={lead.createdAt || undefined}
+                        className="whitespace-nowrap text-sm tabular-nums text-[#5f512d]"
+                        title={formatSubmittedAt(lead.createdAt)}
+                      >
+                        {formatSubmittedAt(lead.createdAt)}
+                      </time>
                     </td>
                     <td className={adminTdClass}><AdminStatusBadge status={lead.status} /></td>
                     {imageField && (
@@ -133,6 +159,7 @@ export function AdminRequestsManager({
                 ["Name", selectedLead.name],
                 ["Email", selectedLead.email],
                 ["Phone", selectedLead.phone],
+                ["Submitted", formatSubmittedAt(selectedLead.createdAt)],
                 ...extraFields.map((field) => [field.label, selectedLead[field.key]]),
               ].map(([label, value]) => (
                 <div key={label}>
