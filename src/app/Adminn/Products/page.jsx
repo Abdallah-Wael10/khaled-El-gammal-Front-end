@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { Edit3, Loader2, Package, Plus, Settings2, Tag, Trash2, Upload, X } from "lucide-react";
+import { Edit3, ImageOff, Loader2, Package, Plus, Settings2, Tag, Trash2, Upload, X } from "lucide-react";
 import {
   useAddCategoryMutation,
   useDeleteCategoryMutation,
@@ -47,6 +47,7 @@ import {
   useObjectUrl,
   validateImageFile,
 } from "@/app/utils/imageUtils";
+import { getProductImageCandidates, getUploadImageUrl, normalizeImageCandidates } from "@/app/utils/productImages";
 import { getSellingPrice } from "@/app/utils/pricing";
 
 const emptyForm = {
@@ -175,7 +176,7 @@ const Products = () => {
         await addProduct(formData).unwrap();
       }
       resetForm();
-      refetch();
+      await refetch();
     } catch (err) {
       alert(err?.data?.message || "Error saving product");
     }
@@ -297,12 +298,10 @@ const Products = () => {
                 className="overflow-hidden rounded-lg border border-[#e8dcc2] bg-[#fffdf8] shadow-sm"
               >
                 <div className="relative aspect-[4/3] bg-[#f2ead7]">
-                  <Image
-                    src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`}
+                  <AdminProductImage
+                    candidates={getProductImageCandidates(product)}
                     alt={product.title || "Product"}
-                    fill
                     sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover"
                   />
                   <span className="absolute left-3 top-3"><AdminStatusBadge status={product.inStock ? "In stock" : "Out of stock"} /></span>
                 </div>
@@ -526,6 +525,7 @@ const Products = () => {
               addProductImage={addProductImage}
               replaceProductImage={replaceProductImage}
               deleteProductImage={deleteProductImage}
+              refetchProducts={refetch}
             />
           </div>
 
@@ -668,6 +668,45 @@ function ImageSpinner() {
   );
 }
 
+function AdminProductImage({ candidates = [], alt, sizes = "160px", imageClassName = "object-cover" }) {
+  const imageCandidates = useMemo(() => normalizeImageCandidates(candidates), [candidates]);
+  const imageKey = imageCandidates.join("|");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeImage = imageCandidates[activeIndex] || "";
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [imageKey]);
+
+  if (!activeImage) {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#fff7e4] px-3 text-center text-[#7a6c4d]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80">
+          <ImageOff className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <span className="text-xs font-bold uppercase tracking-[0.1em]">Image missing</span>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      key={activeImage}
+      src={activeImage}
+      alt={alt}
+      fill
+      sizes={sizes}
+      className={imageClassName}
+      onError={() => {
+        setActiveIndex((current) => {
+          const nextIndex = current + 1;
+          return nextIndex < imageCandidates.length ? nextIndex : imageCandidates.length;
+        });
+      }}
+    />
+  );
+}
+
 function PendingGalleryThumb({ file, onRemove, disabled }) {
   const previewUrl = useObjectUrl(file);
   if (!previewUrl) return null;
@@ -704,6 +743,7 @@ function ImageManager({
   addProductImage,
   replaceProductImage,
   deleteProductImage,
+  refetchProducts,
 }) {
   const [uploading, setUploading] = useState(false);
   const [replacingImage, setReplacingImage] = useState(null);
@@ -749,6 +789,7 @@ function ImageManager({
         try {
           latestProduct = await addProductImage({ id: currentProduct._id, image: prepared }).unwrap();
           setCurrentProduct(latestProduct);
+          await refetchProducts?.();
         } catch (err) {
           alert(err?.data?.message || "Failed to upload image");
           break;
@@ -781,6 +822,7 @@ function ImageManager({
     try {
       const updated = await deleteProductImage({ id: currentProduct._id, imageName }).unwrap();
       setCurrentProduct(updated);
+      await refetchProducts?.();
     } catch (err) {
       alert(err?.data?.message || "Failed to delete image");
     } finally {
@@ -804,6 +846,7 @@ function ImageManager({
         image: prepared,
       }).unwrap();
       setCurrentProduct(updated);
+      await refetchProducts?.();
     } catch (err) {
       alert(err?.data?.message || "Failed to replace image");
     } finally {
@@ -821,7 +864,7 @@ function ImageManager({
             {form.mainImage ? (
               <MainImagePreview file={form.mainImage} />
             ) : editMode && currentProduct?.mainImage ? (
-              <Image src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${currentProduct.mainImage}`} alt="Main product" fill className="object-cover" />
+              <AdminProductImage candidates={[getUploadImageUrl(currentProduct.mainImage)]} alt="Main product" />
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-[#7a5f07]">
                 <Upload className="h-7 w-7" aria-hidden="true" />
@@ -850,7 +893,7 @@ function ImageManager({
           <div className="mt-2 flex flex-wrap gap-3">
             {editMode && currentProduct?.images?.map((img) => (
               <div key={img} className="relative h-20 w-20 overflow-hidden rounded-lg border border-[#e8dcc2]">
-                <Image src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${img}`} alt="Product gallery" fill className="object-cover" />
+                <AdminProductImage candidates={[getUploadImageUrl(img)]} alt="Product gallery" sizes="80px" />
                 {(replacingImage === img || deletingImage === img) && <ImageSpinner />}
                 <button
                   type="button"

@@ -13,6 +13,7 @@ import { motion } from "motion/react";
 import { fadeUp, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
 import { useGetCategoriesQuery } from "@/app/features/Api/CategoryApi";
 
+import { getProductImageCandidates } from "@/app/utils/productImages";
 import { getSellingPrice, hasDiscount } from "@/app/utils/pricing";
 
 const ShopClient = ({ initialProducts = [], initialError }) => {
@@ -169,7 +170,7 @@ const ShopClient = ({ initialProducts = [], initialError }) => {
               <motion.div key={product._id} variants={staggerItem} className="w-full max-w-xs">
                 <Card
                   id={product._id}
-                  image={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`}
+                  imageCandidates={getProductImageCandidates(product)}
                   title={product.title}
                   price={product.price}
                   description={product.description}

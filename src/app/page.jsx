@@ -19,6 +19,7 @@ import draw from "./images/draw.svg";
 import Cart from "./components/Cart/page";
 import { useGetProductsQuery } from "./features/Api/ProductApi";
 import { fadeUp, pageReveal, scaleTap, staggerContainer, staggerItem, viewportOnce } from "@/app/lib/motion";
+import { getProductImageCandidates } from "@/app/utils/productImages";
 
 const socialLinks = [
   { href: "tel:+201159227861", icon: wp, label: "Call or WhatsApp" },
@@ -46,7 +47,6 @@ function ProductCardSkeleton() {
 
 export default function Home() {
   const { data: Products = [], isLoading: isLoadingProducts } = useGetProductsQuery();
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const randomProducts = useMemo(() => {
     if (!Products.length) return [];
@@ -178,7 +178,7 @@ export default function Home() {
                 <motion.div key={product._id} variants={staggerItem} className="w-full max-w-xs">
                   <Card
                     id={product._id}
-                    image={`${baseUrl}/uploads/${product.mainImage}`}
+                    imageCandidates={getProductImageCandidates(product)}
                     title={product.title}
                     price={product.price}
                     description={product.description}

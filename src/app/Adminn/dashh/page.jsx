@@ -122,14 +122,14 @@ const Dashboard = () => {
         }
       />
 
-      <AdminMotionList className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5 [&>*:last-child:nth-child(odd)]:col-span-2 md:[&>*:last-child:nth-child(odd)]:col-span-1">
+      <AdminMotionList className="grid min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-5 min-[390px]:[&>*:last-child:nth-child(odd)]:col-span-2 md:[&>*:last-child:nth-child(odd)]:col-span-1">
         {stats.map((stat) => (
           <AdminStatCard key={stat.label} {...stat} />
         ))}
       </AdminMotionList>
 
-      <div className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <AdminPanel>
+      <div className="mt-5 grid min-w-0 gap-5 sm:mt-6 sm:gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]">
+        <AdminPanel className="min-w-0">
           <AdminPanelHeader
             title="Recent Orders"
             description="Latest customer activity and status."
@@ -199,7 +199,7 @@ const Dashboard = () => {
           )}
         </AdminPanel>
 
-        <AdminPanel className="p-4 sm:p-5">
+        <AdminPanel className="min-w-0 p-4 sm:p-5">
           <h3 className="text-base font-bold text-[#211900]">Quick Actions</h3>
           <p className="mt-1 text-sm text-[#695f4c]">Common admin tasks for daily operations.</p>
           <div className="mt-4 grid gap-2">

@@ -107,11 +107,16 @@ export function AdminShell({ children, title = "Admin", eyebrow = "Khaled Gammal
 
   useEffect(() => {
     if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKeyDown = (event) => {
       if (event.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [open]);
 
   const handleLogout = () => {
@@ -155,12 +160,12 @@ export function AdminShell({ children, title = "Admin", eyebrow = "Khaled Gammal
   );
 
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-[#fbf7ed] text-[#211900]">
+    <div className="min-h-dvh w-full max-w-full overflow-x-hidden bg-[#fbf7ed] text-[#211900]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/10 lg:block">
         {sidebar}
       </aside>
 
-      <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-[#e8dcc2] bg-[#fbf7ed]/94 px-4 backdrop-blur sm:px-5 lg:ml-72 lg:px-8">
+      <header className="sticky top-0 z-30 flex min-h-16 w-full max-w-full min-w-0 items-center justify-between gap-3 border-b border-[#e8dcc2] bg-[#fbf7ed]/94 px-4 backdrop-blur sm:px-5 lg:ml-72 lg:w-[calc(100%-18rem)] lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
@@ -225,12 +230,12 @@ export function AdminShell({ children, title = "Admin", eyebrow = "Khaled Gammal
       </AnimatePresence>
 
       <motion.main
-        className="overflow-x-hidden lg:ml-72"
+        className="min-w-0 max-w-full overflow-x-hidden lg:ml-72"
         variants={reduceMotion ? undefined : fadeUp}
         initial={reduceMotion ? false : "hidden"}
         animate={reduceMotion ? undefined : "visible"}
       >
-        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+        <div className="mx-auto w-full max-w-7xl min-w-0 px-4 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
           {children}
         </div>
       </motion.main>
@@ -240,14 +245,14 @@ export function AdminShell({ children, title = "Admin", eyebrow = "Khaled Gammal
 
 export function AdminPageHeader({ eyebrow, title, description, actions }) {
   return (
-    <div className="mb-5 flex flex-col gap-4 border-b border-[#e8dcc2] pb-5 sm:mb-6 md:flex-row md:items-end md:justify-between">
+    <div className="mb-5 flex max-w-full min-w-0 flex-col gap-4 border-b border-[#e8dcc2] pb-5 sm:mb-6 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0 max-w-3xl">
         {eyebrow && <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#7a5f07]">{eyebrow}</p>}
         <h2 className="mt-1 text-xl font-bold tracking-tight text-[#211900] sm:text-2xl lg:text-3xl">{title}</h2>
         {description && <p className="mt-2 text-sm leading-6 text-[#695f4c]">{description}</p>}
       </div>
       {actions && (
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center [&_a]:w-full sm:[&_a]:w-auto [&_button]:w-full sm:[&_button]:w-auto">
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center [&_a]:w-full sm:[&_a]:w-auto [&_button]:w-full sm:[&_button]:w-auto">
           {actions}
         </div>
       )}
@@ -257,19 +262,19 @@ export function AdminPageHeader({ eyebrow, title, description, actions }) {
 
 export function AdminPanelHeader({ title, description, action }) {
   return (
-    <div className="flex flex-col gap-3 border-b border-[#eee2c9] p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex max-w-full min-w-0 flex-col gap-3 border-b border-[#eee2c9] p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <h3 className="text-base font-bold text-[#211900]">{title}</h3>
         {description && <p className="mt-1 text-sm text-[#695f4c]">{description}</p>}
       </div>
-      {action && <div className="w-full shrink-0 sm:w-auto [&_a]:block [&_span]:flex [&_span]:w-full sm:[&_span]:w-auto">{action}</div>}
+      {action && <div className="w-full min-w-0 shrink-0 sm:w-auto [&_a]:block [&_span]:flex [&_span]:w-full sm:[&_span]:w-auto">{action}</div>}
     </div>
   );
 }
 
 export function AdminPanel({ children, className = "" }) {
   return (
-    <section className={`rounded-lg border border-[#e5d8bd] bg-white shadow-[0_14px_40px_rgba(33,25,0,0.07)] ${className}`}>
+    <section className={`max-w-full min-w-0 overflow-hidden rounded-lg border border-[#e5d8bd] bg-white shadow-[0_14px_40px_rgba(33,25,0,0.07)] ${className}`}>
       {children}
     </section>
   );
@@ -277,7 +282,7 @@ export function AdminPanel({ children, className = "" }) {
 
 export function AdminToolbar({ children, className = "" }) {
   return (
-    <div className={`flex flex-col gap-3 border-b border-[#eee2c9] p-4 md:flex-row md:items-center md:justify-between ${className}`}>
+    <div className={`flex max-w-full min-w-0 flex-col gap-3 border-b border-[#eee2c9] p-4 md:flex-row md:items-center md:justify-between ${className}`}>
       {children}
     </div>
   );
@@ -341,11 +346,11 @@ export function AdminStatCard({ label, value, href, icon: Icon = BarChart3, tone
       variants={staggerItem}
       whileHover={{ y: -3 }}
       transition={shellEase}
-      className={`rounded-lg border p-4 shadow-sm sm:p-5 ${tones[tone] || tones.neutral}`}
+      className={`h-full min-w-0 rounded-lg border p-4 shadow-sm sm:p-5 ${tones[tone] || tones.neutral}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold opacity-80 sm:text-sm">{label}</p>
+          <p className="break-words text-xs font-semibold opacity-80 sm:text-sm">{label}</p>
           <p className="mt-1.5 text-2xl font-bold tabular-nums sm:mt-2 sm:text-3xl">{value}</p>
         </div>
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/70 sm:h-11 sm:w-11">
@@ -356,7 +361,7 @@ export function AdminStatCard({ label, value, href, icon: Icon = BarChart3, tone
   );
 
   return href ? (
-    <Link href={href} className="block rounded-lg focus-visible:outline-offset-4">
+    <Link href={href} className="block min-w-0 rounded-lg focus-visible:outline-offset-4">
       {content}
     </Link>
   ) : content;
@@ -410,20 +415,20 @@ export function AdminSkeleton({ rows = 5, grid = false }) {
 }
 
 export function AdminTable({ children, className = "" }) {
-  return <div className={`overflow-x-auto ${className}`}>{children}</div>;
+  return <div className={`max-w-full overflow-x-auto ${className}`}>{children}</div>;
 }
 
 export function AdminDesktopTable({ children, className = "" }) {
-  return <div className={`hidden overflow-x-auto md:block ${className}`}>{children}</div>;
+  return <div className={`hidden max-w-full overflow-x-auto md:block ${className}`}>{children}</div>;
 }
 
 export function AdminMobileList({ children, className = "" }) {
-  return <div className={`grid gap-3 p-4 md:hidden ${className}`}>{children}</div>;
+  return <div className={`grid min-w-0 gap-3 p-4 md:hidden ${className}`}>{children}</div>;
 }
 
 export function AdminMobileCard({ children, className = "" }) {
   return (
-    <article className={`rounded-lg border border-[#f0e5cf] bg-[#fffdf8] p-4 ${className}`}>
+    <article className={`min-w-0 overflow-hidden rounded-lg border border-[#f0e5cf] bg-[#fffdf8] p-4 ${className}`}>
       {children}
     </article>
   );

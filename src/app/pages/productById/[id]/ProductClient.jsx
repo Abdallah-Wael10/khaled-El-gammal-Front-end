@@ -27,6 +27,7 @@ import {
   staggerItem,
   viewportOnce,
 } from "@/app/lib/motion";
+import { getProductImageCandidates } from "@/app/utils/productImages";
 import { getDiscountPercent, getSellingPrice, hasDiscount } from "@/app/utils/pricing";
 
 const ProductClient = ({ id }) => {
@@ -83,10 +84,7 @@ const ProductClient = ({ id }) => {
   const inStock = product.stock || 0;
   const productSizes = product?.sizes && product.sizes.length > 0 ? product.sizes : [];
 
-  const imagesArr = [
-    product.mainImage || product.image,
-    ...(product.images || []).filter((img) => img !== (product.mainImage || product.image)),
-  ];
+  const imagesArr = getProductImageCandidates(product, baseUrl);
 
   const openPreview = (src) => {
     setPreviewImg(src);
@@ -209,8 +207,7 @@ const ProductClient = ({ id }) => {
             className="h-[340px] w-full overflow-hidden rounded-[18px] border border-[#00000026] bg-white shadow-xl md:h-[490px]"
             style={{ maxWidth: "100%" }}
           >
-            {imagesArr.map((img, idx) => {
-              const src = `${baseUrl}/uploads/${img}`;
+            {imagesArr.map((src, idx) => {
               return (
                 <SwiperSlide key={idx} className="flex items-center justify-center bg-white">
                   <Image
@@ -230,8 +227,7 @@ const ProductClient = ({ id }) => {
           </Swiper>
 
           <div className="mt-4 flex w-full flex-wrap justify-center gap-3">
-            {imagesArr.map((img, idx) => {
-              const src = `${baseUrl}/uploads/${img}`;
+            {imagesArr.map((src, idx) => {
               return (
                 <button
                   key={idx}
@@ -429,7 +425,7 @@ const ProductClient = ({ id }) => {
                   <motion.div key={prod._id} variants={staggerItem}>
                     <Card
                       id={prod._id}
-                      image={`${baseUrl}/uploads/${prod.mainImage}`}
+                      imageCandidates={getProductImageCandidates(prod, baseUrl)}
                       title={prod.title}
                       price={prod.price}
                       description={prod.description}

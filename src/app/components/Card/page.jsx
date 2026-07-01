@@ -1,24 +1,38 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ImageOff } from "lucide-react";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { scaleTap } from "@/app/lib/motion";
+import { normalizeImageCandidates } from "@/app/utils/productImages";
 import { getSellingPrice, hasDiscount } from "@/app/utils/pricing";
 
-const Card = ({ image, title, price, description, discountPrice, inStock, stock, id }) => {
+const Card = ({ image, imageCandidates = [], title, price, description, discountPrice, inStock, stock, id }) => {
   const isOutOfStock = !inStock || Number(stock) === 0;
   const discounted = hasDiscount(discountPrice);
   const sellingPrice = getSellingPrice(price, discountPrice);
-  const [imageFailed, setImageFailed] = useState(false);
+  const candidates = useMemo(() => {
+    const rawCandidates = Array.isArray(imageCandidates) ? imageCandidates : [imageCandidates];
+    return normalizeImageCandidates([...rawCandidates, image]);
+  }, [imageCandidates, image]);
+  const candidateKey = candidates.join("|");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
-    setImageFailed(false);
-  }, [image]);
+    setActiveImageIndex(0);
+  }, [candidateKey]);
 
-  const showImage = Boolean(image) && !imageFailed;
+  const activeImage = candidates[activeImageIndex] || "";
+  const showImage = Boolean(activeImage);
+
+  const handleImageError = () => {
+    setActiveImageIndex((current) => {
+      const nextIndex = current + 1;
+      return nextIndex < candidates.length ? nextIndex : candidates.length;
+    });
+  };
 
   return (
     <motion.div
@@ -46,20 +60,28 @@ const Card = ({ image, title, price, description, discountPrice, inStock, stock,
           </div>
         )}
 
-        <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-white">
+        <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-[#fffdf8]">
           {showImage ? (
             <Image
-              src={image}
+              key={activeImage}
+              src={activeImage}
               alt={title || "Product"}
-              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              className="h-full w-full object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               width={400}
               height={300}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
               loading="lazy"
               unoptimized
-              onError={() => setImageFailed(true)}
+              onError={handleImageError}
             />
-          ) : null}
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-5 text-center text-[#8a7a56]">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#fff3cf]">
+                <ImageOff className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="text-xs font-bold uppercase tracking-[0.12em]">Image unavailable</span>
+            </div>
+          )}
           {!isOutOfStock && (
             <span className="absolute bottom-2.5 right-2.5 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-[#6f5702] shadow-sm ring-1 ring-[#ead9a5]">
               {stock} in stock
