@@ -85,6 +85,7 @@ const ProductClient = ({ id }) => {
   const productSizes = product?.sizes && product.sizes.length > 0 ? product.sizes : [];
 
   const imagesArr = getProductImageCandidates(product, baseUrl);
+  const cartImage = product.displayImage || product.mainImage || product.image;
 
   const openPreview = (src) => {
     setPreviewImg(src);
@@ -101,7 +102,7 @@ const ProductClient = ({ id }) => {
         id: product._id,
         title: product.title,
         price: product.price,
-        mainImage: product.mainImage || product.image,
+        mainImage: cartImage,
         quantity,
         size: selectedSize,
         discountPrice: product.discountPrice || 0,
@@ -121,7 +122,7 @@ const ProductClient = ({ id }) => {
         id: product._id,
         title: product.title,
         price: product.price,
-        mainImage: product.mainImage || product.image,
+        mainImage: cartImage,
         quantity,
         size: selectedSize,
         discountPrice: product.discountPrice || 0,

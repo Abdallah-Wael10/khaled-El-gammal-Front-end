@@ -38,6 +38,9 @@ export function getProductImageCandidates(product, baseUrl = process.env.NEXT_PU
   if (!product) return [];
 
   const rawCandidates = [
+    ...(Array.isArray(product.availableImages) ? product.availableImages : []),
+    product.displayImage,
+    ...(Array.isArray(product.imageCandidates) ? product.imageCandidates : []),
     product.mainImage || product.image,
     ...(Array.isArray(product.images) ? product.images : []),
   ];
