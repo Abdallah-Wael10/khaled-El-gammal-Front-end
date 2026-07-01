@@ -1,12 +1,16 @@
 "use client";
-import React, { useState } from 'react'
-import Logo from "./images/klogo.png"
-import acc from "./images/acc.svg"
-import cart from "./images/cartt.svg"
-import Image from 'next/image'
-import Link from 'next/link'
+
+import React, { useEffect, useState } from "react";
+import Logo from "./images/klogo.png";
+import acc from "./images/acc.svg";
+import cart from "./images/cartt.svg";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 import { useDispatch } from "react-redux";
 import { openCart } from "@/app/redux/slices/cartSlice";
+import { drawerSlide, fadeIn, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -18,102 +22,185 @@ const navLinks = [
   { href: "/pages/ContactUs", label: "Contact Us" },
 ];
 
+const isActiveLink = (pathname, href) => {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+};
+
 const Nav1 = () => {
   const dispatch = useDispatch();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const handleCartOpen = () => {
+    setOpen(false);
+    dispatch(openCart());
+  };
+
   return (
-    <nav className="w-full h-[80px] bg-gradient-to-r from-[#2B2201] to-[#917405] shadow-lg relative flex items-center z-50">
-      {/* Desktop (from 901px up) */}
-      <div className="w-full items-center justify-between px-8 flex max-[1015px]:hidden">
-        {/* Logo */}
-        <div className="flex-shrink-0">
-          <Link href="/">
-            <Image src={Logo} alt="logo" className="object-contain h-[54px] w-auto" priority />
-          </Link>
-        </div>
-        {/* Links */}
-        <div className="flex-1 flex justify-center items-center gap-4">
-          {navLinks.map(link => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="relative px-2 py-1 text-white text-[16px] font-medium transition group"
-            >
-              <span className="group-hover:text-[#FFCF67] transition">{link.label}</span>
-              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-[#FFCF67] rounded-full group-hover:w-full transition-all duration-300"></span>
-            </Link>
-          ))}
-        </div>
-        {/* Icons */}
-        <div className="flex items-center gap-5">
-          <Link href="/pages/login">
-            <Image src={acc} alt="login" className="w-7 h-7 hover:scale-110 transition" />
-          </Link>
-          <button
-            className="cursor-pointer active:scale-90 hover:scale-110 transition"
-            onClick={() => dispatch(openCart())}
-            aria-label="Open cart"
-          >
-            <Image src={cart} alt="cart" className="w-7 h-7" />
-          </button>
-        </div>
-      </div>
-      {/* Mobile (0 - 1015px) */}
-      <div className="w-full items-center justify-between px-4 hidden max-[1015px]:flex">
-        {/* Logo Center */}
-        <div className="flex-1 flex justify-center">
-          <Link href="/">
-            <Image src={Logo} alt="logo" className="object-contain h-[48px] w-auto" priority />
-          </Link>
-        </div>
-        {/* Toggle */}
-        <button
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col justify-center items-center w-10 h-10 pl-5"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#241d04]/92 text-white shadow-[0_18px_40px_rgba(33,25,0,0.22)] backdrop-blur-xl">
+      <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex min-h-11 items-center rounded-full pr-3 focus-visible:outline-offset-4" aria-label="Khaled El Gamal home">
+          <Image src={Logo} alt="Khaled El Gamal logo" className="h-[54px] w-auto object-contain" priority />
+        </Link>
+
+        <motion.div
+          className="hidden items-center justify-center rounded-full border border-white/10 bg-white/[0.06] p-1.5 shadow-inner min-[1016px]:flex"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
         >
-          <span className={`block h-0.5 w-7 bg-white rounded transition-all duration-300 ${open ? "rotate-45 translate-y-2" : ""}`}></span>
-          <span className={`block h-0.5 w-7 bg-white rounded my-1 transition-all duration-300 ${open ? "opacity-0" : ""}`}></span>
-          <span className={`block h-0.5 w-7 bg-white rounded transition-all duration-300 ${open ? "-rotate-45 -translate-y-2" : ""}`}></span>
-        </button>
-        {/* Slide Menu */}
-        <div className={`fixed top-0 right-0 h-screen w-[80vw] max-w-xs bg-gradient-to-br from-[#2B2201] to-[#917405] shadow-2xl z-40 flex flex-col items-center pt-24 gap-8 transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}>
-          {navLinks.map(link => (
+          {navLinks.map((link) => {
+            const active = isActiveLink(pathname, link.href);
+            return (
+              <motion.div key={link.href} variants={staggerItem}>
+                <Link
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`relative flex min-h-11 items-center rounded-full px-4 text-[15px] font-semibold transition-colors duration-200 ${
+                    active ? "text-[#211900]" : "text-white/88 hover:text-[#f8d77e]"
+                  }`}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="public-nav-active"
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-[#f7d878] via-[#d9a928] to-[#b88710]"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <span className="relative z-10 whitespace-nowrap">{link.label}</span>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        <div className="hidden items-center gap-2 min-[1016px]:flex">
+          <motion.div {...scaleTap}>
             <Link
-              key={link.href}
-              href={link.href}
-              className="text-white text-lg font-semibold px-4 py-2 rounded hover:bg-[#FFCF67]/20 transition"
-              onClick={() => setOpen(false)}
+              href="/pages/login"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] transition-colors hover:bg-white/[0.12]"
+              aria-label="Login to account"
             >
-              {link.label}
+              <Image src={acc} alt="" className="h-6 w-6" aria-hidden="true" />
             </Link>
-          ))}
-          <div className="flex items-center gap-6 mt-6">
-            <Link href="/pages/login" onClick={() => setOpen(false)}>
-              <Image src={acc} alt="login" className="w-7 h-7 hover:scale-110 transition" />
-            </Link>
-            <button
-              className="cursor-pointer active:scale-90 hover:scale-110 transition"
-              onClick={() => {
-                setOpen(false);
-                dispatch(openCart());
-              }}
-              aria-label="Open cart"
-            >
-              <Image src={cart} alt="cart" className="w-7 h-7" />
-            </button>
-          </div>
+          </motion.div>
+          <motion.button
+            type="button"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[#d9a928]/35 bg-[#d9a928]/14 transition-colors hover:bg-[#d9a928]/24"
+            onClick={handleCartOpen}
+            aria-label="Open cart"
+            {...scaleTap}
+          >
+            <Image src={cart} alt="" className="h-6 w-6" aria-hidden="true" />
+          </motion.button>
         </div>
-        {/* Overlay */}
-        {open && (
-          <div
-            className="fixed inset-0 bg-black/40 z-30"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
-        )}
+
+        <button
+          type="button"
+          className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.08] min-[1016px]:hidden"
+          onClick={() => setOpen((value) => !value)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="public-mobile-menu"
+        >
+          <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+          <span className={`absolute h-0.5 w-6 rounded-full bg-white transition-transform duration-200 ${open ? "rotate-45" : "-translate-y-2"}`} />
+          <span className={`absolute h-0.5 w-6 rounded-full bg-white transition-opacity duration-200 ${open ? "opacity-0" : "opacity-100"}`} />
+          <span className={`absolute h-0.5 w-6 rounded-full bg-white transition-transform duration-200 ${open ? "-rotate-45" : "translate-y-2"}`} />
+        </button>
       </div>
+
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.button
+              type="button"
+              className="fixed inset-0 z-40 h-dvh w-full cursor-default bg-black/58 backdrop-blur-sm min-[1016px]:hidden"
+              aria-label="Close menu overlay"
+              onClick={() => setOpen(false)}
+              variants={fadeIn}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            />
+            <motion.aside
+              id="public-mobile-menu"
+              className="fixed right-0 top-0 z-50 flex h-dvh w-[86vw] max-w-[360px] flex-col border-l border-[#ead9a5]/30 bg-[#241d04] px-6 pb-6 pt-7 shadow-2xl min-[1016px]:hidden"
+              variants={drawerSlide}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <div className="mb-8 flex items-center justify-between">
+                <Image src={Logo} alt="Khaled El Gamal logo" className="h-12 w-auto object-contain" priority />
+                <button
+                  type="button"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.08] text-2xl leading-none text-white"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close menu"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <motion.div className="flex flex-col gap-2" variants={staggerContainer} initial="hidden" animate="visible">
+                {navLinks.map((link) => {
+                  const active = isActiveLink(pathname, link.href);
+                  return (
+                    <motion.div key={link.href} variants={staggerItem}>
+                      <Link
+                        href={link.href}
+                        aria-current={active ? "page" : undefined}
+                        className={`flex min-h-12 items-center rounded-2xl px-4 text-base font-semibold transition-colors ${
+                          active
+                            ? "bg-[#d9a928] text-[#211900]"
+                            : "text-white/88 hover:bg-white/[0.08] hover:text-[#f8d77e]"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+
+              <div className="mt-auto grid grid-cols-2 gap-3 pt-8">
+                <Link
+                  href="/pages/login"
+                  className="flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.08] text-sm font-semibold"
+                >
+                  Account
+                </Link>
+                <button
+                  type="button"
+                  className="premium-button flex min-h-11 items-center justify-center text-sm"
+                  onClick={handleCartOpen}
+                >
+                  Cart
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

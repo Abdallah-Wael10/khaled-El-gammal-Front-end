@@ -1,8 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fffaf0;
+  --foreground: #211900;
+  --brand-ink: #211900;
+  --brand-espresso: #2b2201;
+  --brand-olive: #6f5702;
+  --brand-gold: #d9a928;
+  --brand-gold-strong: #b88710;
+  --brand-gold-soft: #fff1bf;
+  --brand-ivory: #fffaf0;
+  --brand-surface: #ffffff;
+  --brand-muted: #70664f;
+  --brand-border: #ead9a5;
+  --shadow-soft: 0 18px 50px rgba(43, 34, 1, 0.12);
+  --shadow-lift: 0 24px 70px rgba(43, 34, 1, 0.18);
 }
 
 @theme inline {
@@ -23,6 +35,94 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins), sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+button,
+a,
+select,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-gold) 76%, white);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--brand-gold-soft);
+  color: var(--brand-ink);
+}
+
+.premium-section {
+  background:
+    radial-gradient(circle at top left, rgba(217, 169, 40, 0.12), transparent 30rem),
+    linear-gradient(180deg, #fffdf7 0%, #fffaf0 100%);
+}
+
+.premium-surface {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--brand-border);
+  box-shadow: var(--shadow-soft);
+}
+
+.premium-button {
+  min-height: 44px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f2c95c 0%, var(--brand-gold) 48%, var(--brand-gold-strong) 100%);
+  color: #211900;
+  font-weight: 700;
+  box-shadow: 0 12px 26px rgba(184, 135, 16, 0.22);
+  transition: box-shadow 180ms ease, filter 180ms ease;
+}
+
+.premium-button:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 16px 34px rgba(184, 135, 16, 0.28);
+}
+
+.premium-input {
+  min-height: 48px;
+  border: 1px solid #ded6c0;
+  border-radius: 14px;
+  background: #fffdf8;
+  color: var(--brand-ink);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.premium-input:focus {
+  border-color: var(--brand-gold);
+  box-shadow: 0 0 0 4px rgba(217, 169, 40, 0.16);
+  background: #ffffff;
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 @layer components {

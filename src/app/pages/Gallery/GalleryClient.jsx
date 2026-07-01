@@ -1,38 +1,18 @@
 "use client";
-import React, { useState } from 'react';
-import { useGetGalleryQuery } from '@/app/features/Api/galleryApi';
-import Loading from '@/app/components/loading/page';
-import Nav1 from '@/app/components/Nav1/page';
-import Image from 'next/image';
-import Footer from '@/app/components/footer/page';
-import Cart from '@/app/components/Cart/page';
 
-export const metadata = {
-  title: "Gallery | Khaled El Gamal",
-  description: "Explore the gallery collection of Khaled El Gamal. Unique handmade Egyptian art and decor.",
-  keywords: "Gallery, Khaled El Gamal, Handmade, Egyptian Art, Decor",
-  openGraph: {
-    title: "Gallery | Khaled El Gamal",
-    description: "Explore the gallery collection of Khaled El Gamal. Unique handmade Egyptian art and decor.",
-    url: "http://localhost:3000/pages/Gallery",
-    siteName: "Khaled El Gamal",
-    images: [
-      {
-        url: "http://localhost:3000/khaledbg.webp",
-        width: 1200,
-        height: 630,
-        alt: "Gallery Khaled El Gamal",
-      },
-    ],
-    locale: "en_US",
-    type: "article",
-  },
-};
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useGetGalleryQuery } from "@/app/features/Api/galleryApi";
+import Loading from "@/app/components/loading/page";
+import Nav1 from "@/app/components/Nav1/page";
+import Image from "next/image";
+import Footer from "@/app/components/footer/page";
+import Cart from "@/app/components/Cart/page";
+import { fadeIn, fadeUp, modalFadeScale, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
 
 const GalleryClient = ({ initialGallery, initialError }) => {
   const [forceFetch, setForceFetch] = useState(false);
 
-  // skip فقط أول مرة لو عندك initialGallery ولم يحصل forceFetch
   const { data, isLoading, error, isFetching } = useGetGalleryQuery(undefined, {
     skip: !!initialGallery && !forceFetch,
   });
@@ -41,25 +21,42 @@ const GalleryClient = ({ initialGallery, initialError }) => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImg, setModalImg] = useState(null);
+  const [modalTitle, setModalTitle] = useState("");
 
-  const openModal = (img) => {
+  const openModal = (img, title) => {
     setModalImg(img);
+    setModalTitle(title || "Gallery image");
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
-    setModalImg(null);
   };
 
-  if ((isLoading || isFetching) && !galleryData) return <Loading />;
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [modalOpen]);
+
+  if ((isLoading || isFetching) && !galleryData) {
+    return <Loading message="Loading gallery..." detail="Preparing the craft archive" />;
+  }
   if ((error || initialError) && !galleryData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-[#FFF8E1]">
-        <p className="text-2xl font-bold text-[#FFCF67] mb-4">Check your internet and try again</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center bg-[#fffaf0] px-5 text-center">
+        <p className="mb-4 text-2xl font-black text-[#b88710]">Check your internet and try again</p>
         <button
+          type="button"
           onClick={() => setForceFetch(true)}
-          className="px-6 py-2 rounded-full bg-[#FFCF67] text-white font-semibold shadow hover:bg-yellow-400 transition"
+          className="premium-button inline-flex min-h-11 items-center justify-center px-6"
         >
           Refresh
         </button>
@@ -69,75 +66,101 @@ const GalleryClient = ({ initialGallery, initialError }) => {
 
   if (!galleryData || galleryData.length === 0) {
     return (
-      <div className="w-full min-h-[60vh] flex justify-center items-center bg-white">
-        <Loading />
+      <div className="flex min-h-[60vh] w-full items-center justify-center bg-white">
+        <Loading variant="section" message="Loading gallery..." detail="Preparing the craft archive" />
       </div>
     );
   }
 
   return (
-    <div className="bg-[#FFF8E1] min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[#fffaf0] text-[#211900]">
       <Nav1 />
       <Cart />
-      <section className="w-full pt-10 pb-5 flex flex-col items-center bg-white">
-        <h1 className="text-[35px] text-[#FFCF67] font-extrabold text-center mb-2 tracking-tight max-[470px]:text-[30px]">
-          Gallery Collection
-        </h1>
-        <p className="text-[23px] font-normal text-[#919191] text-center mb-2 max-[470px]:text-[18px]">
-          Explore our exquisite collection of handmade products.
-        </p>
+      <section className="premium-section px-5 py-12 text-center">
+        <motion.div variants={fadeUp} initial="hidden" animate="visible">
+          <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#9b8b64]">Craft archive</span>
+          <h1 className="mt-3 text-4xl font-black text-[#b88710] sm:text-5xl">Gallery Collection</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-7 text-[#70664f] sm:text-lg">
+            Explore our collection of handmade Egyptian pieces, materials, finishes, and craft details.
+          </p>
+        </motion.div>
       </section>
-      <section className="w-full flex-1 pb-10 bg-white flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full max-w-7xl px-4">
-          {galleryData.map((item, index) => (
-            <div
-              key={item._id}
-              className="relative group rounded-2xl overflow-hidden shadow-lg bg-[#FFF8E1] transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer"
-              onClick={() => openModal(`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image}`)}
-            >
-              <Image
-                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image}`}
-                alt={item.title}
-                width={400}
-                height={320}
-                className="object-cover w-full h-[260px] md:h-[320px] transition-transform duration-700 ease-in-out group-hover:scale-110 group-hover:brightness-110"
-                draggable={false}
-                priority={index === 0}
-              />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t from-[#FFCF67]/70 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                <span className="px-5 py-2 rounded-full bg-[#FFCF67] text-white text-sm font-semibold shadow-lg backdrop-blur">
-                  View
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-      {/* Fullscreen Modal */}
-      {modalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 transition-all duration-300"
-          onClick={closeModal}
+
+      <section className="flex-1 bg-white px-5 py-12">
+        <motion.div
+          className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
         >
-          <button
-            className="absolute top-6 right-8 text-white bg-[#FFCF67] hover:bg-yellow-400 rounded-full w-12 h-12 flex items-center justify-center text-3xl font-bold shadow-lg transition"
+          {galleryData.map((item, index) => {
+            const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.image}`;
+            return (
+              <motion.button
+                type="button"
+                key={item._id}
+                className="group overflow-hidden rounded-[22px] border border-[#ead9a5] bg-white text-left shadow-[0_14px_40px_rgba(43,34,1,0.10)] transition-shadow hover:shadow-[0_22px_55px_rgba(43,34,1,0.16)]"
+                onClick={() => openModal(imageUrl, item.title)}
+                variants={staggerItem}
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                {...scaleTap}
+              >
+                <div className="relative aspect-[4/5] overflow-hidden bg-[#fffaf0]">
+                  <Image
+                    src={imageUrl}
+                    alt={item.title || `Gallery item ${index + 1}`}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.055]"
+                    draggable={false}
+                    priority={index < 4}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#211900]/58 via-transparent to-transparent opacity-70 transition-opacity group-hover:opacity-45" />
+                  <span className="absolute bottom-4 left-4 rounded-full bg-white/92 px-4 py-2 text-sm font-bold text-[#6f5702] shadow-sm">
+                    View
+                  </span>
+                </div>
+              </motion.button>
+            );
+          })}
+        </motion.div>
+      </section>
+
+      <AnimatePresence onExitComplete={() => setModalImg(null)}>
+        {modalOpen && modalImg && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
             onClick={closeModal}
-            aria-label="Close"
-            style={{ zIndex: 60 }}
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label={modalTitle}
           >
-            &times;
-          </button>
-          <Image
-            src={modalImg}
-            alt="Large Gallery"
-            fill
-            className="object-contain w-full h-full"
-            priority
-            onClick={e => e.stopPropagation()}
-          />
-        </div>
-      )}
+            <button
+              type="button"
+              className="absolute right-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/12 text-3xl leading-none text-white transition-colors hover:bg-white/20"
+              onClick={closeModal}
+              aria-label="Close gallery preview"
+            >
+              &times;
+            </button>
+            <motion.div
+              className="relative h-full max-h-[90vh] w-full max-w-6xl"
+              onClick={(e) => e.stopPropagation()}
+              variants={modalFadeScale}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <Image src={modalImg} alt={modalTitle} fill className="object-contain" priority />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <Footer />
     </div>
   );

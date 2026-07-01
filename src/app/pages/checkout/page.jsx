@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useCreateCheckoutMutation } from "@/app/features/Api/CheckoutApi";
@@ -6,8 +7,26 @@ import { clearCart } from "@/app/redux/slices/cartSlice";
 import { toast } from "react-hot-toast";
 import Nav1 from "@/app/components/Nav1/page";
 import Footer from "@/app/components/footer/page";
+import Cart from "@/app/components/Cart/page";
+import Loading from "@/app/components/loading/page";
 import Image from "next/image";
 import { useGetShippingQuery } from "@/app/features/Api/ShippingApi";
+import { motion } from "motion/react";
+import { fadeUp, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
+
+const fieldGroups = [
+  [
+    { label: "Name", name: "name", type: "text", placeholder: "Your Name", autocomplete: "name" },
+    { label: "Phone", name: "phone", type: "tel", placeholder: "Your Phone", autocomplete: "tel" },
+    { label: "Email", name: "email", type: "email", placeholder: "Your Email", autocomplete: "email" },
+  ],
+  [
+    { label: "Country", name: "country", type: "text", placeholder: "Your Country", autocomplete: "country-name" },
+    { label: "Governorate", name: "governorate", type: "text", placeholder: "Your Governorate", autocomplete: "address-level1" },
+    { label: "Address", name: "address", type: "text", placeholder: "Your Address", autocomplete: "street-address" },
+    { label: "Apartment", name: "apartment", type: "text", placeholder: "Your Apartment", autocomplete: "address-line2", optional: true },
+  ],
+];
 
 const CheckOut = () => {
   const [createCheckout, { isLoading }] = useCreateCheckoutMutation();
@@ -31,7 +50,6 @@ const CheckOut = () => {
     setHydrated(true);
   }, []);
 
-  // subtotal بالخصم لو موجود
   const subtotal = cart.reduce(
     (sum, item) =>
       sum +
@@ -41,8 +59,7 @@ const CheckOut = () => {
     0
   );
 
-  // احسب التوتال بشكل آمن مع الشحن
-  const total = subtotal + (shippingLoading ? 0 : (shippingCost || 0));
+  const total = subtotal + (shippingLoading ? 0 : shippingCost || 0);
 
   const handleChange = (e) => setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
 
@@ -55,7 +72,7 @@ const CheckOut = () => {
     try {
       await createCheckout({
         userInfo,
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           productId: item.id,
           title: item.title,
           price: item.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.price,
@@ -75,237 +92,200 @@ const CheckOut = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[#fffaf0] text-[#211900]">
       <Nav1 />
-      <main className="flex-1 w-full flex flex-col items-center justify-center py-10 px-2">
-        <div className="w-full max-w-7xl flex flex-col md:flex-row gap-8 max-[900px]:flex-wrap">
-          {/* Left: User Info */}
-          <section className="w-full  bg-white rounded-2xl shadow-xl border border-[#FFCF67]/40 p-8 transition-all duration-300 max-[900px]:w-full">
-            {/* Stepper */}
-            <div className="flex flex-col gap-2 mb-8">
-              <h1 className="text-xl font-bold text-[#FFCF67]">Step 1 - Your Info</h1>
-              <div className="w-full h-3 bg-[#E4E4E7] rounded-full overflow-hidden">
-                <div className="h-full bg-[#FFCF67] rounded-full transition-all duration-500" style={{ width: "50%" }} />
-              </div>
-            </div>
-            {/* Contact Info */}
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Your Contact Information</h2>
-            <form className="flex text-black flex-col gap-8" onSubmit={handleSubmit}>
-              <div className="flex flex-wrap gap-6">
-                <div className="flex-1 min-w-[180px] relative">
-                  <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300"
-                    placeholder="Your Name"
-                    value={userInfo.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="flex-1 min-w-[180px] relative">
-                  <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Phone</label>
-                  <input
-                    type="number"
-                    name="phone"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300"
-                    placeholder="Your Phone"
-                    value={userInfo.phone}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="flex-1 min-w-[180px] relative">
-                  <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    className="w-full border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300"
-                    placeholder="Your Email"
-                    value={userInfo.email}
-                    onChange={handleChange}
-                    required
+      <Cart />
+      <main className="flex-1">
+        <section className="premium-section px-5 py-10 text-center sm:py-14">
+          <motion.div variants={fadeUp} initial="hidden" animate="visible" className="mx-auto max-w-3xl">
+            <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#9b8b64]">Checkout</span>
+            <h1 className="mt-4 text-4xl font-black text-[#211900] sm:text-5xl">Complete your order</h1>
+            <p className="mt-4 text-base font-medium leading-7 text-[#70664f]">
+              Add your contact and delivery details. Payment is currently cash on delivery.
+            </p>
+          </motion.div>
+        </section>
+
+        <section className="bg-white px-5 py-12">
+          <motion.div
+            className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1.35fr_0.85fr]"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.section className="premium-surface rounded-[28px] p-5 sm:p-8" variants={staggerItem}>
+              <div className="mb-8">
+                <h2 className="text-2xl font-black text-[#211900]">Your Info</h2>
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#eee6cf]">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-[#f2c95c] to-[#b88710]"
+                    initial={{ scaleX: 0, transformOrigin: "left" }}
+                    animate={{ scaleX: 0.55 }}
+                    transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
                   />
                 </div>
               </div>
-              {/* Address */}
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">Your Address Details</h2>
-              <div className="flex flex-col md:flex-row gap-6 w-full">
-                <div className="flex-[1.3] flex flex-col gap-4">
-                  <div className="flex gap-4">
-                    <div className="relative w-1/2">
-                      <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Country</label>
-                      <input
-                        type="text"
-                        name="country"
-                        className="w-full border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300"
-                        placeholder="Your Country"
-                        value={userInfo.country}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="relative w-1/2">
-                      <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Governorate</label>
-                      <input
-                        type="text"
-                        name="governorate"
-                        className="w-full border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300"
-                        placeholder="Your Governorate"
-                        value={userInfo.governorate}
-                        onChange={handleChange}
-                        required
-                      />
+
+              <form className="text-[#211900]" onSubmit={handleSubmit}>
+                <div className="grid gap-8">
+                  <div>
+                    <h3 className="mb-5 text-lg font-black text-[#6f5702]">Contact Information</h3>
+                    <div className="grid gap-5 md:grid-cols-3">
+                      {fieldGroups[0].map((field) => (
+                        <label key={field.name} className="grid gap-2 text-sm font-bold text-[#6f5702]">
+                          {field.label}
+                          <input
+                            type={field.type}
+                            name={field.name}
+                            className="premium-input w-full px-4 py-3"
+                            placeholder={field.placeholder}
+                            value={userInfo[field.name]}
+                            onChange={handleChange}
+                            autoComplete={field.autocomplete}
+                            required={!field.optional}
+                          />
+                        </label>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="relative w-1/2">
-                      <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Address</label>
-                      <input
-                        type="text"
-                        name="address"
-                        className="w-full border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300"
-                        placeholder="Your Address"
-                        value={userInfo.address}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="relative w-1/2">
-                      <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Apartment</label>
-                      <input
-                        type="text"
-                        name="apartment"
-                        className="w-full border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300"
-                        placeholder="Your Apartment"
-                        value={userInfo.apartment}
-                        onChange={handleChange}
-                      />
+
+                  <div>
+                    <h3 className="mb-5 text-lg font-black text-[#6f5702]">Address Details</h3>
+                    <div className="grid gap-5 md:grid-cols-2">
+                      {fieldGroups[1].map((field) => (
+                        <label key={field.name} className="grid gap-2 text-sm font-bold text-[#6f5702]">
+                          {field.label}
+                          <input
+                            type={field.type}
+                            name={field.name}
+                            className="premium-input w-full px-4 py-3"
+                            placeholder={field.placeholder}
+                            value={userInfo[field.name]}
+                            onChange={handleChange}
+                            autoComplete={field.autocomplete}
+                            required={!field.optional}
+                          />
+                        </label>
+                      ))}
                     </div>
                   </div>
-                </div>
-                {/* Right: Notes */}
-                <div className="flex-[0.7] flex flex-col">
-                  <div className="relative h-full">
-                    <label className="absolute -top-3 left-4 text-sm text-[#FFCF67] bg-white px-1 font-semibold">Notes (Optional)</label>
+
+                  <label className="grid gap-2 text-sm font-bold text-[#6f5702]">
+                    Notes <span className="font-semibold text-[#9b8b64]">(Optional)</span>
                     <textarea
                       name="notes"
-                      rows={6}
-                      className="w-full h-full min-h-[120px] border border-gray-200 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:ring-2 focus:ring-[#FFCF67] transition-all duration-300 resize-none"
-                      placeholder="Your Notes"
+                      rows={5}
+                      className="premium-input min-h-[140px] w-full resize-y px-4 py-3"
+                      placeholder="Delivery notes or product preferences"
                       value={userInfo.notes}
                       onChange={handleChange}
                     />
-                  </div>
-                </div>
-              </div>
-              {/* Payment */}
-              <div className="flex flex-col gap-4 mt-4">
-                <h3 className="text-base font-semibold text-gray-800">Select your preferred payment method</h3>
-                <div className="flex items-center gap-3 border border-gray-200 rounded-xl px-5 py-4 hover:shadow-md transition-all duration-300">
-                  <input
-                    type="checkbox"
-                    id="cash-on-delivery"
-                    name="payment-method"
-                    value="cash-on-delivery"
-                    className="accent-[#FFCF67] w-5 h-5 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-[#FFCF67]"
-                    checked
-                    readOnly
-                  />
-                  <label htmlFor="cash-on-delivery" className="text-base font-semibold text-gray-700">
-                    Cash on Delivery
                   </label>
+
+                  <div>
+                    <h3 className="mb-4 text-lg font-black text-[#6f5702]">Payment Method</h3>
+                    <label className="flex min-h-14 items-center gap-3 rounded-2xl border border-[#ead9a5] bg-[#fffaf0] px-5 py-4">
+                      <input
+                        type="checkbox"
+                        id="cash-on-delivery"
+                        name="payment-method"
+                        value="cash-on-delivery"
+                        className="h-5 w-5 accent-[#b88710]"
+                        checked
+                        readOnly
+                      />
+                      <span className="text-base font-bold text-[#211900]">Cash on Delivery</span>
+                    </label>
+                  </div>
+
+                  <motion.button
+                    type="submit"
+                    disabled={isLoading}
+                    className="premium-button flex w-full items-center justify-center px-8 text-lg disabled:cursor-not-allowed disabled:opacity-60"
+                    {...scaleTap}
+                  >
+                    {isLoading ? "Placing Order..." : "Order Now"}
+                  </motion.button>
                 </div>
-              </div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-8 py-3 rounded-xl bg-[#FFCF67] text-white text-lg font-bold shadow-md hover:bg-[#FFD96B] hover:scale-105 active:scale-95 transition-all duration-300"
-              >
-                {isLoading ? "Placing Order..." : "Order Now"}
-              </button>
-            </form>
-          </section>
-          {/* Right: Order Summary */}
-          <section className="w-full  min-h-[705px] bg-white rounded-2xl shadow-xl border border-[#FFCF67]/40 p-8 flex flex-col gap-6 transition-all duration-300 max-[900px]:w-full">
-            <h2 className="text-xl font-bold text-[#FFCF67] mb-4">Your Items</h2>
-            {!hydrated ? (
-              <div className="flex-1 flex items-center justify-center text-gray-400 italic text-center min-h-[200px]">
-                Loading...
-              </div>
-            ) : (
-              <>
-                <div className="flex-1 flex flex-col gap-4 overflow-y-auto max-h-[350px]">
-                  {cart.length === 0 ? (
-                    <span className="text-gray-400 italic text-center">Your cart is empty.</span>
-                  ) : (
-                    cart.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 border-b border-gray-100 pb-3">
-                        <Image
-                          src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.mainImage}`}
-                          alt={item.title}
-                          width={70}
-                          height={70}
-                          priority
-                          className="rounded-lg object-cover border border-[#FFCF67]/30"
-                        />
-                        <div className="flex-1 max-[321px]:text-[9px]">
-                          <div className="font-semibold text-[#FFCF67]">{item.title}</div>
-                          <div className="text-gray-700 font-medium ">
-                            {item.discountPrice && item.discountPrice > 0 ? (
-                              <>
-                                <span>{item.discountPrice} LE</span>
-                                <span className="ml-2 text-red-500 line-through text-sm max-[321px]:text-[9px]">{item.price} LE</span>
-                              </>
-                            ) : (
-                              <span>{item.price} LE</span>
-                            )}
+              </form>
+            </motion.section>
+
+            <motion.aside className="premium-surface h-max rounded-[28px] p-5 sm:p-8 lg:sticky lg:top-28" variants={staggerItem}>
+              <h2 className="mb-5 text-2xl font-black text-[#211900]">Your Items</h2>
+              {!hydrated ? (
+                <Loading variant="inline" message="Loading cart..." detail="Checking your selected items" />
+              ) : (
+                <>
+                  <div className="custom-scrollbar flex max-h-[380px] flex-col gap-4 overflow-y-auto pr-1">
+                    {cart.length === 0 ? (
+                      <span className="rounded-2xl bg-[#fffaf0] px-5 py-6 text-center font-semibold text-[#70664f]">
+                        Your cart is empty.
+                      </span>
+                    ) : (
+                      cart.map((item) => (
+                        <div key={item.id} className="grid grid-cols-[70px_1fr_auto] items-center gap-3 border-b border-[#ead9a5] pb-4">
+                          <Image
+                            src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${item.mainImage}`}
+                            alt={item.title}
+                            width={70}
+                            height={70}
+                            priority
+                            className="aspect-square rounded-xl border border-[#ead9a5] object-cover"
+                          />
+                          <div className="min-w-0">
+                            <div className="truncate font-bold text-[#211900]">{item.title}</div>
+                            <div className="font-semibold text-[#b88710]">
+                              {item.discountPrice && item.discountPrice > 0 ? (
+                                <>
+                                  <span>{item.discountPrice} LE</span>
+                                  <span className="ml-2 text-sm text-red-500 line-through">{item.price} LE</span>
+                                </>
+                              ) : (
+                                <span>{item.price} LE</span>
+                              )}
+                            </div>
+                            <div className="text-sm text-[#70664f]">
+                              Qty: {item.quantity} {item.size && <>| Size: {item.size}</>}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-500">Qty: {item.quantity} {item.size && <>| Size: {item.size}</>}</div>
+                          <div className="text-right text-sm font-black text-[#211900]">
+                            {(item.discountPrice && item.discountPrice > 0
+                              ? item.discountPrice * item.quantity
+                              : item.price * item.quantity)}{" "}
+                            LE
+                          </div>
                         </div>
-                        <div className="font-bold text-black">
-                          {(item.discountPrice && item.discountPrice > 0
-                            ? item.discountPrice * item.quantity
-                            : item.price * item.quantity)}{" "}
-                          LE
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="border-t border-[#FFCF67]/30 text-black pt-4 flex flex-col gap-2">
-                  <div className="flex justify-between text-lg font-semibold">
-                    <span>Subtotal</span>
-                    <span>{subtotal} LE</span>
+                      ))
+                    )}
                   </div>
-                  <div className="flex justify-between text-lg font-semibold">
-                    <span>Shipping</span>
-                    <span>
-                      {shippingLoading
-                        ? "..."
-                        : shippingCost === 0
-                        ? "Free Shipping"
-                        : `${shippingCost} LE`}
-                    </span>
+                  <div className="mt-5 border-t border-[#ead9a5] pt-5 text-[#211900]">
+                    <div className="flex justify-between text-base font-semibold text-[#70664f]">
+                      <span>Subtotal</span>
+                      <span>{subtotal} LE</span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-base font-semibold text-[#70664f]">
+                      <span>Shipping</span>
+                      <span>
+                        {shippingLoading
+                          ? "..."
+                          : shippingCost === 0
+                          ? "Free Shipping"
+                          : `${shippingCost} LE`}
+                      </span>
+                    </div>
+                    <div className="mt-4 flex justify-between border-t border-[#ead9a5] pt-4 text-2xl font-black text-[#b88710]">
+                      <span>Total</span>
+                      <span>{shippingLoading ? "..." : `${total} LE`}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xl font-bold text-[#FFCF67]">
-                    <span>Total</span>
-                    <span>
-                      {shippingLoading
-                        ? "..."
-                        : `${subtotal + (typeof shippingCost === "number" ? shippingCost : 0)} LE`}
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
-          </section>
-        </div>
+                </>
+              )}
+            </motion.aside>
+          </motion.div>
+        </section>
       </main>
       <Footer />
     </div>
-
   );
 };
 

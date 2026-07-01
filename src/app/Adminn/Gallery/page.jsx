@@ -116,10 +116,7 @@ const GalleryAdmin = () => {
         </div>
         <div className="bg-white/90 rounded-2xl shadow-xl p-8">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FFCF67] mb-4"></span>
-              <div className="text-[#FFCF67] font-bold text-lg">Loading gallery...</div>
-            </div>
+            <Loading variant="inline" message="Loading gallery..." detail="Preparing gallery management" />
           ) : gallery && gallery.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {gallery.map((item) => (

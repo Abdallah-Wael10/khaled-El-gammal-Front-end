@@ -1,5 +1,9 @@
 "use client";
+
+import { useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { motion } from "motion/react";
 import Nav1 from "./components/Nav1/page";
 import Footer from "./components/footer/page";
 import Card from "./components/Card/page";
@@ -12,163 +16,159 @@ import map from "./images/mapp.svg";
 import dogleft from "./images/dogleft.svg";
 import dogright from "./images/dogright.svg";
 import draw from "./images/draw.svg";
-import Link from "next/link";
 import Cart from "./components/Cart/page";
 import { useGetProductsQuery } from "./features/Api/ProductApi";
+import { fadeUp, pageReveal, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
+
+const socialLinks = [
+  { href: "tel:+201159227861", icon: wp, label: "Call or WhatsApp" },
+  { href: "https://www.instagram.com", icon: insta, label: "Instagram" },
+  { href: "https://www.facebook.com/?locale=ar_AR", icon: facebook, label: "Facebook" },
+  { href: "https://maps.app.goo.gl/fusJbKjX4nHmefsC8?g_st=iw", icon: map, label: "Location" },
+];
 
 export default function Home() {
-  const { data: Products = [], isLoading } = useGetProductsQuery();
+  const { data: Products = [] } = useGetProductsQuery();
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // Shuffle function
-  function shuffle(array) {
-    return array
+  const randomProducts = useMemo(() => {
+    return [...Products]
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
-  }
-
-  // Get 4 random products
-  const randomProducts = shuffle(Products).slice(0, 4);
+      .map(({ value }) => value)
+      .slice(0, 4);
+  }, [Products]);
 
   return (
-    <main>
+    <main className="bg-[#fffaf0] text-[#211900]">
       <Nav1 />
       <Cart />
-      <section className="w-full  aspect-[80/50] bg-home bg-cover bg-no-repeat flex flex-col items-center justify-center  ">
-        <h1 className=" w-full h-max text-[48px] font-extrabold text-center text-white [text-shadow:2px_2px_19px_#F9E18BD1] max-[900px]:text-[20px]">
-          KHALED EL GAMAL
-        </h1>
-        <h2 className=" w-full h-max text-[48px] font-extrabold text-center text-white  [text-shadow:2px_2px_19px_#F9E18BD1] max-[900px]:text-[20px]">
-          The Power Of Creativity
-        </h2>
-        <div className="w-[13%] h-max p-3 bg-[#01010166] rounded-[22px] flex items-center justify-center gap-5 mt-4 max-[600px]:w-[45%] max-[900px]:w-[25%]  max-[1439px]:w-[21%] ">
-          <a href="tel:+201159227861" target="_blank" rel="noopener noreferrer">
-            <Image
-              src={wp}
-              alt="whatsapp"
-              width={24}
-              height={24}
-              className=""
-            />
-          </a>
-          <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
-            <Image
-              src={insta}
-              alt="instagram"
-              width={24}
-              height={24}
-              className=""
-            />
-          </a>
-          <a href="https://www.facebook.com/?locale=ar_AR" target="_blank" rel="noopener noreferrer">
-            <Image
-              src={facebook}
-              alt="facebook"
-              width={24}
-              height={24}
-              className=""
-            />
-          </a>
-          <a
-            href="https://maps.app.goo.gl/fusJbKjX4nHmefsC8?g_st=iw"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image src={map} alt="map" width={24} height={24} className="" />
-          </a>
-        </div>
-      </section>
-      <section className="w-full h-max flex bg-white">
-        <div className="w-[25%] pt-10 h-max ml-2 max-[900px]:hidden">
-          <div className="w-[100%] h-max relative flex items-center justify-end pr-5">
-            {/* Blurred background layer */}
-            <div className="w-full absolute inset-0 rounded-r-full bg-[#FFCF67]/30 blur-2xl z-0" />
-  
-            {/* Sharp image layer */}
-            <div className="relative z-10">
-              <Image src={dogleft} alt="dog icon left" />
+
+      <motion.section
+        className="relative flex min-h-[calc(100dvh-80px)] w-full items-center justify-center overflow-hidden bg-home bg-cover bg-center bg-no-repeat px-4 py-20"
+        variants={pageReveal}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/36 via-black/28 to-[#211900]/72" />
+        <motion.div
+          className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.p variants={staggerItem} className="mb-4 rounded-full border border-white/18 bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-[0.22em] text-[#f8d77e] backdrop-blur-md">
+            Handmade Egyptian Art
+          </motion.p>
+          <motion.h1 variants={staggerItem} className="text-4xl font-black tracking-tight text-white drop-shadow-2xl sm:text-6xl lg:text-7xl">
+            KHALED EL GAMAL
+          </motion.h1>
+          <motion.h2 variants={staggerItem} className="mt-4 max-w-3xl text-xl font-bold leading-8 text-[#fff4c9] sm:text-3xl">
+            The Power Of Creativity
+          </motion.h2>
+          <motion.div variants={staggerItem} className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {socialLinks.map((item) => (
+              <motion.a
+                key={item.label}
+                href={item.href}
+                target={item.href.startsWith("http") ? "_blank" : undefined}
+                rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/18 bg-black/26 text-white shadow-lg backdrop-blur-md transition-colors hover:bg-[#d9a928]/26"
+                aria-label={item.label}
+                {...scaleTap}
+              >
+                <Image src={item.icon} alt="" width={22} height={22} aria-hidden="true" />
+              </motion.a>
+            ))}
+          </motion.div>
+        </motion.div>
+      </motion.section>
+
+      <motion.section
+        className="premium-section w-full overflow-hidden py-14"
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.18 }}
+      >
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 lg:grid-cols-[0.65fr_1fr_0.65fr] lg:px-8">
+          <div className="hidden justify-end lg:flex">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-[#d9a928]/20 blur-2xl" />
+              <Image src={dogleft} alt="Egyptian craft illustration left" className="relative z-10" />
+            </div>
+          </div>
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#9b8b64]">Who we are</span>
+            <h2 className="mt-3 text-3xl font-black text-[#211900] sm:text-5xl">
+              KHA<span className="text-[#b88710]">LED EL G</span>AMAL
+            </h2>
+            <p className="mt-5 text-base font-medium leading-8 text-[#70664f]">
+              Khaled El Gammal is a distinguished destination for the finest treasures of Khan El Khalili. Each piece reflects Egyptian heritage, artisanal mastery, and a deep commitment to handcrafted detail.
+            </p>
+          </div>
+          <div className="hidden justify-start lg:flex">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-[#d9a928]/20 blur-2xl" />
+              <Image src={dogright} alt="Egyptian craft illustration right" className="relative z-10" />
             </div>
           </div>
         </div>
-        <div className="w-[48%] h-max pb-10 pt-5 flex justify-start items-center flex-col gap-5 max-[900px]:w-full max-[900px]:p-5">
-          <span className="w-full h-max text-[#BCBCBC] text-[24px] font-normal text-center">
-            Who we are
-          </span>
-          <h2 className="w-full h-max text-[36px] text-[#FFCF67] font-semibold text-center max-[900px]:text-[29px]">
-            KHA<span className="text-[#CFA854]">LED EL G</span>AMAL
-          </h2>
-          <p className="w-full h-max text-center text-[16px] text-black font-normal">
-            Khaled El Gammal - 19 Years of Artistic Excellence With over 19
-            years of experience, Khaled El Gammal is a distinguished destination
-            for the finest treasures of Khan El Khalili. Renowned for
-            exceptional handcrafted products, the shop reflects a deep
-            appreciation for Egyptian heritage and artisanal mastery. Each piece
-            is a testament to our creative strength, blending tradition with
-            innovation to deliver truly artistic and unique creations. Our
-            philosophy: The Power of Creativity.
-          </p>
-        </div>
-        <div className="w-[25%] pt-10  h-max max-[900px]:hidden">
-          <div className="w-[100%] h-max relative flex items-center justify-start pl-5">
-            {/* Blurred background layer */}
-            <div className="w-full absolute inset-0 rounded-l-full bg-[#FFCF67]/30 blur-2xl z-0" />
+      </motion.section>
 
-            {/* Sharp image layer */}
-            <div className="relative z-10">
-              <Image src={dogright} alt="dog icon right" />
+      <section className="bg-white py-14">
+        <motion.div
+          className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-5 lg:px-8"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.16 }}
+        >
+          <motion.div variants={staggerItem} className="flex w-full items-center justify-center gap-6">
+            <Image src={draw} alt="" className="hidden max-w-[260px] opacity-70 md:block" aria-hidden="true" priority />
+            <div className="text-center">
+              <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#9b8b64]">Selected pieces</span>
+              <h2 className="mt-3 text-3xl font-black text-[#b88710] sm:text-4xl">Trending Product</h2>
             </div>
-          </div>
-        </div>
-      </section>
-      <section className="w-full h-max flex bg-white max-[900px]:flex-wrap">
-        <div className="w-[33%] h-max max-[900px]:w-full max-[900px]:flex max-[900px]:justify-center max-[900px]:items-center">
-          <Image src={draw} alt="draw icon" priority />
-        </div>
-        <div className="w-[34%] h-max flex min-h-[238px] justify-center items-center max-[900px]:w-full">
-          <h2 className="w-full text-[36px] font-semibold text-[#FFCF67] text-center">
-            Trending Product
-          </h2>
-        </div>
-        <div className="w-[33%] h-max max-[900px]:hidden">
-          <Image src={draw} alt="draw icon" priority />
-        </div>
-      </section>
-      <section className="w-full h-max bg-white pt-5 pb-5 flex justify-center items-center gap-10 flex-wrap">
-        {randomProducts.map((product) => (
-          <Card
-            key={product._id}
-            id={product._id}
-            image={`${baseUrl}/uploads/${product.mainImage}`}
-            title={product.title}
-            price={product.price}
-            description={product.description}
-            discountPrice={product.discountPrice}
-            inStock={product.inStock}
-            stock={product.stock}
-          />
-        ))}
+            <Image src={draw} alt="" className="hidden max-w-[260px] -scale-x-100 opacity-70 lg:block" aria-hidden="true" priority />
+          </motion.div>
 
-        <div className="w-full h-max flex justify-center items-center">
-          <Link
-            href="/pages/shop"
-            className="mt-8 px-8 py-3 bg-[#FFCF67] text-white font-bold rounded-full shadow hover:bg-[#e6b94e] transition"
-          >
-            View Full Products
-          </Link>
-        </div>
+          <motion.div variants={staggerContainer} className="grid w-full grid-cols-1 justify-items-center gap-7 sm:grid-cols-2 lg:grid-cols-4">
+            {randomProducts.map((product) => (
+              <motion.div key={product._id} variants={staggerItem} className="w-full max-w-xs">
+                <Card
+                  id={product._id}
+                  image={`${baseUrl}/uploads/${product.mainImage}`}
+                  title={product.title}
+                  price={product.price}
+                  description={product.description}
+                  discountPrice={product.discountPrice}
+                  inStock={product.inStock}
+                  stock={product.stock}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div variants={staggerItem} {...scaleTap}>
+            <Link href="/pages/shop" className="premium-button inline-flex min-h-12 items-center justify-center px-8 text-sm">
+              View Full Products
+            </Link>
+          </motion.div>
+        </motion.div>
       </section>
-      <section className="w-full h-max pb-5 flex flex-col gap-5 bg-white">
-        <div className="w-full h-max pt-5 pl-5 ">
-          <h2 className="w-full h-max  text-[32px] font-semibold text-[#FFCF67]">
-            Gallery Collection
-          </h2>
-        </div>
-        <div className="w-full h-max flex justify-center items-center">
+
+      <section className="premium-section py-14">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
+          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.18 }}>
+            <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#9b8b64]">Craft archive</span>
+            <h2 className="mt-3 text-3xl font-black text-[#211900] sm:text-4xl">Gallery Collection</h2>
+          </motion.div>
           <GallerySlider />
         </div>
       </section>
-      <section className="w-full h-max pb-5 pt-5 bg-white flex justify-center items-center">
+
+      <section className="bg-white flex justify-center items-center px-5 py-14">
         <Form />
       </section>
       <Footer />

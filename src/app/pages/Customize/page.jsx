@@ -1,8 +1,9 @@
-import React from 'react'
-import Nav1 from '@/app/components/Nav1/page'
-import Footer from '@/app/components/footer/page'
-import CustomizeForm from '@/app/components/CustomizeForm/page'
-import Cart from '@/app/components/Cart/page';
+import React from "react";
+import Nav1 from "@/app/components/Nav1/page";
+import Footer from "@/app/components/footer/page";
+import CustomizeForm from "@/app/components/CustomizeForm/page";
+import Cart from "@/app/components/Cart/page";
+import { MotionBlock } from "@/app/components/MotionShell";
 
 export const metadata = {
   title: "Customize | Khaled El Gamal",
@@ -28,21 +29,28 @@ export const metadata = {
 
 const Customize = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-[#fffaf0] text-[#211900]">
       <Nav1 />
       <Cart />
-      <main className="flex flex-col items-center justify-center flex-1 px-2 md:px-4 py-6 md:py-10">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-[#FFCF67] mb-4 text-center">
-          Customize Your Dream Design
-        </h1>
-        <p className="w-full max-w-[600px] h-max text-base md:text-lg text-gray-700 mb-6 md:mb-10 text-center">
-          Share your vision with us! Upload an inspiration image and describe your custom design. Our team will bring your ideas to life with expert craftsmanship and attention to detail.
-        </p>
-        <CustomizeForm />
+      <main className="flex-1">
+        <section className="premium-section px-5 py-12 text-center sm:py-16">
+          <MotionBlock viewport={false} className="mx-auto max-w-3xl">
+            <span className="text-sm font-bold uppercase tracking-[0.2em] text-[#9b8b64]">Custom work</span>
+            <h1 className="mt-4 text-4xl font-black leading-tight text-[#211900] sm:text-5xl">
+              Customize Your Dream Design
+            </h1>
+            <p className="mt-5 text-base font-medium leading-8 text-[#70664f] sm:text-lg">
+              Share your vision, upload inspiration images, and describe your custom piece. Our team will shape your ideas with careful craft and attention to detail.
+            </p>
+          </MotionBlock>
+        </section>
+        <section className="flex justify-center bg-white px-5 py-14">
+          <CustomizeForm />
+        </section>
       </main>
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default Customize
+export default Customize;

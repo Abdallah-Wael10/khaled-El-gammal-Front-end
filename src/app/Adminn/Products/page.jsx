@@ -252,7 +252,7 @@ if (form.sizes.length === 0) {
         </div>
         <div className="bg-white/90 rounded-2xl shadow-xl p-8">
           {isLoading ? (
-            <div className="text-center text-[#FFCF67] font-bold">Loading...</div>
+            <Loading variant="inline" message="Loading products..." detail="Preparing product management" />
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {filteredProducts.map((product) => (
@@ -548,9 +548,9 @@ if (form.sizes.length === 0) {
         {/* Shipping Section */}
         <div className="mb-8 p-4 bg-white rounded-xl shadow flex flex-col md:flex-row items-center gap-4">
           <span className="font-bold text-[#FFCF67]">Shipping Cost:</span>
-          <span>
+          <span className={shippingLoading ? "animate-pulse font-semibold text-[#917405]" : ""}>
             {shippingLoading
-              ? "Loading..."
+              ? "Loading shipping..."
               : shippingData
               ? (shippingData.shippingCost === 0 ? "Free Shipping" : `${shippingData.shippingCost} LE`)
               : "Not Set"}
