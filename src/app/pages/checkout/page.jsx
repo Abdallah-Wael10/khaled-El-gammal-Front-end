@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useGetShippingQuery } from "@/app/features/Api/ShippingApi";
 import { motion } from "motion/react";
 import { fadeUp, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
+import { getSellingPrice, hasDiscount } from "@/app/utils/pricing";
 
 const fieldGroups = [
   [
@@ -51,11 +52,7 @@ const CheckOut = () => {
   }, []);
 
   const subtotal = cart.reduce(
-    (sum, item) =>
-      sum +
-      (item.discountPrice && item.discountPrice > 0
-        ? item.discountPrice * item.quantity
-        : item.price * item.quantity),
+    (sum, item) => sum + getSellingPrice(item.price, item.discountPrice) * item.quantity,
     0
   );
 
@@ -75,7 +72,7 @@ const CheckOut = () => {
         items: cart.map((item) => ({
           productId: item.id,
           title: item.title,
-          price: item.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.price,
+          price: getSellingPrice(item.price, item.discountPrice),
           mainImage: item.mainImage,
           quantity: item.quantity,
           size: item.size,
@@ -235,9 +232,9 @@ const CheckOut = () => {
                           <div className="min-w-0">
                             <div className="truncate font-bold text-[#211900]">{item.title}</div>
                             <div className="font-semibold text-[#b88710]">
-                              {item.discountPrice && item.discountPrice > 0 ? (
+                              {hasDiscount(item.discountPrice) ? (
                                 <>
-                                  <span>{item.discountPrice} LE</span>
+                                  <span>{getSellingPrice(item.price, item.discountPrice)} LE</span>
                                   <span className="ml-2 text-sm text-red-500 line-through">{item.price} LE</span>
                                 </>
                               ) : (
@@ -249,10 +246,7 @@ const CheckOut = () => {
                             </div>
                           </div>
                           <div className="text-right text-sm font-black text-[#211900]">
-                            {(item.discountPrice && item.discountPrice > 0
-                              ? item.discountPrice * item.quantity
-                              : item.price * item.quantity)}{" "}
-                            LE
+                            {getSellingPrice(item.price, item.discountPrice) * item.quantity} LE
                           </div>
                         </div>
                       ))

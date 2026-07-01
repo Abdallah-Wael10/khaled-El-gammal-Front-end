@@ -9,6 +9,7 @@ import { removeFromCart, updateQuantity, clearCart, closeCart } from "@/app/redu
 import goldKey from "./images/goldkey.svg";
 import { useGetShippingQuery } from "@/app/features/Api/ShippingApi";
 import { drawerSlide, fadeIn, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
+import { getSellingPrice, hasDiscount } from "@/app/utils/pricing";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -29,11 +30,7 @@ const Cart = () => {
   }, [dispatch, isCartOpen]);
 
   const subtotal = items.reduce(
-    (sum, item) =>
-      sum +
-      (item.discountPrice && item.discountPrice > 0
-        ? item.discountPrice * item.quantity
-        : item.price * item.quantity),
+    (sum, item) => sum + getSellingPrice(item.price, item.discountPrice) * item.quantity,
     0
   );
 
@@ -139,9 +136,9 @@ const Cart = () => {
                         <div className="min-w-0">
                           <div className="truncate text-sm font-bold text-[#211900]">{item.title}</div>
                           <div className="mt-1 text-sm font-semibold text-[#b88710]">
-                            {item.discountPrice && item.discountPrice > 0 ? (
+                            {hasDiscount(item.discountPrice) ? (
                               <>
-                                <span>{item.discountPrice} LE</span>
+                                <span>{getSellingPrice(item.price, item.discountPrice)} LE</span>
                                 <span className="ml-2 text-xs text-red-500 line-through">{item.price} LE</span>
                               </>
                             ) : (

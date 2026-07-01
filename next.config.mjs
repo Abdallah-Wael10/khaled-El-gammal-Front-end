@@ -35,6 +35,10 @@ function getUploadRemotePatterns() {
 }
 
 const nextConfig = {
+  transpilePackages: ["motion", "framer-motion", "motion-dom", "motion-utils"],
+  experimental: {
+    optimizePackageImports: ["motion", "lucide-react"],
+  },
   images: {
     remotePatterns: getUploadRemotePatterns(),
   },

@@ -11,6 +11,7 @@ import Loading from "@/app/components/loading/page";
 import Cart from "@/app/components/Cart/page";
 import { motion } from "motion/react";
 import { fadeUp, scaleTap, staggerContainer, staggerItem } from "@/app/lib/motion";
+import { getSellingPrice, hasDiscount } from "@/app/utils/pricing";
 
 const ShopClient = ({ initialProducts = [], initialError }) => {
   const products = initialProducts;
@@ -37,18 +38,18 @@ const ShopClient = ({ initialProducts = [], initialError }) => {
 
     if (selectedPrice === "Low to High") {
       filtered = filtered.sort((a, b) => {
-        const aPrice = a.discountPrice > 0 ? a.discountPrice : a.price;
-        const bPrice = b.discountPrice > 0 ? b.discountPrice : b.price;
+        const aPrice = getSellingPrice(a.price, a.discountPrice);
+        const bPrice = getSellingPrice(b.price, b.discountPrice);
         return aPrice - bPrice;
       });
     } else if (selectedPrice === "High to Low") {
       filtered = filtered.sort((a, b) => {
-        const aPrice = a.discountPrice > 0 ? a.discountPrice : a.price;
-        const bPrice = b.discountPrice > 0 ? b.discountPrice : b.price;
+        const aPrice = getSellingPrice(a.price, a.discountPrice);
+        const bPrice = getSellingPrice(b.price, b.discountPrice);
         return bPrice - aPrice;
       });
     } else if (selectedPrice === "Discount") {
-      filtered = filtered.filter((p) => p.discountPrice > 0);
+      filtered = filtered.filter((p) => hasDiscount(p.discountPrice));
     }
 
     return filtered;
