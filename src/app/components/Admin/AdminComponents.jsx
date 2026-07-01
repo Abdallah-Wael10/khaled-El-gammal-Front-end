@@ -155,33 +155,34 @@ export function AdminShell({ children, title = "Admin", eyebrow = "Khaled Gammal
   );
 
   return (
-    <div className="min-h-dvh bg-[#fbf7ed] text-[#211900]">
+    <div className="min-h-dvh overflow-x-hidden bg-[#fbf7ed] text-[#211900]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/10 lg:block">
         {sidebar}
       </aside>
 
-      <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-[#e8dcc2] bg-[#fbf7ed]/94 px-4 backdrop-blur lg:ml-72 lg:px-8">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-[#e8dcc2] bg-[#fbf7ed]/94 px-4 backdrop-blur sm:px-5 lg:ml-72 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#d9caa8] bg-white text-[#211900] shadow-sm lg:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#d9caa8] bg-white text-[#211900] shadow-sm lg:hidden"
             aria-label="Open admin menu"
             aria-expanded={open}
             aria-controls="admin-mobile-drawer"
           >
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#7a5f07]">Admin</p>
-            <h1 className="text-base font-bold text-[#211900] sm:text-lg">{title}</h1>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#7a5f07] sm:text-xs">Admin</p>
+            <h1 className="truncate text-base font-bold text-[#211900] sm:text-lg">{title}</h1>
           </div>
         </div>
         <Link
           href="/"
-          className="hidden min-h-11 items-center rounded-lg border border-[#d9caa8] bg-white px-3 text-sm font-semibold text-[#4d3c02] shadow-sm transition-colors hover:border-[#c49a22] hover:text-[#211900] sm:flex"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg border border-[#d9caa8] bg-white px-3 text-sm font-semibold text-[#4d3c02] shadow-sm transition-colors hover:border-[#c49a22] hover:text-[#211900]"
         >
-          View Store
+          <span className="sm:hidden">Store</span>
+          <span className="hidden sm:inline">View Store</span>
         </Link>
       </header>
 
@@ -224,12 +225,12 @@ export function AdminShell({ children, title = "Admin", eyebrow = "Khaled Gammal
       </AnimatePresence>
 
       <motion.main
-        className="lg:ml-72"
+        className="overflow-x-hidden lg:ml-72"
         variants={reduceMotion ? undefined : fadeUp}
         initial={reduceMotion ? false : "hidden"}
         animate={reduceMotion ? undefined : "visible"}
       >
-        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
           {children}
         </div>
       </motion.main>
@@ -239,13 +240,29 @@ export function AdminShell({ children, title = "Admin", eyebrow = "Khaled Gammal
 
 export function AdminPageHeader({ eyebrow, title, description, actions }) {
   return (
-    <div className="mb-6 flex flex-col gap-4 border-b border-[#e8dcc2] pb-5 md:flex-row md:items-end md:justify-between">
-      <div className="max-w-3xl">
+    <div className="mb-5 flex flex-col gap-4 border-b border-[#e8dcc2] pb-5 sm:mb-6 md:flex-row md:items-end md:justify-between">
+      <div className="min-w-0 max-w-3xl">
         {eyebrow && <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#7a5f07]">{eyebrow}</p>}
-        <h2 className="mt-1 text-2xl font-bold tracking-tight text-[#211900] sm:text-3xl">{title}</h2>
+        <h2 className="mt-1 text-xl font-bold tracking-tight text-[#211900] sm:text-2xl lg:text-3xl">{title}</h2>
         {description && <p className="mt-2 text-sm leading-6 text-[#695f4c]">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center [&_a]:w-full sm:[&_a]:w-auto [&_button]:w-full sm:[&_button]:w-auto">
+          {actions}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AdminPanelHeader({ title, description, action }) {
+  return (
+    <div className="flex flex-col gap-3 border-b border-[#eee2c9] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0">
+        <h3 className="text-base font-bold text-[#211900]">{title}</h3>
+        {description && <p className="mt-1 text-sm text-[#695f4c]">{description}</p>}
+      </div>
+      {action && <div className="w-full shrink-0 sm:w-auto [&_a]:block [&_span]:flex [&_span]:w-full sm:[&_span]:w-auto">{action}</div>}
     </div>
   );
 }
@@ -324,15 +341,15 @@ export function AdminStatCard({ label, value, href, icon: Icon = BarChart3, tone
       variants={staggerItem}
       whileHover={{ y: -3 }}
       transition={shellEase}
-      className={`rounded-lg border p-5 shadow-sm ${tones[tone] || tones.neutral}`}
+      className={`rounded-lg border p-4 shadow-sm sm:p-5 ${tones[tone] || tones.neutral}`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold opacity-80">{label}</p>
-          <p className="mt-2 text-3xl font-bold tabular-nums">{value}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold opacity-80 sm:text-sm">{label}</p>
+          <p className="mt-1.5 text-2xl font-bold tabular-nums sm:mt-2 sm:text-3xl">{value}</p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/70">
-          <Icon className="h-5 w-5" aria-hidden="true" />
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/70 sm:h-11 sm:w-11">
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
         </span>
       </div>
     </motion.div>
@@ -392,13 +409,29 @@ export function AdminSkeleton({ rows = 5, grid = false }) {
   );
 }
 
-export function AdminTable({ children }) {
-  return <div className="overflow-x-auto">{children}</div>;
+export function AdminTable({ children, className = "" }) {
+  return <div className={`overflow-x-auto ${className}`}>{children}</div>;
 }
 
-export const adminTableClass = "w-full min-w-[760px] text-left text-sm";
-export const adminThClass = "border-b border-[#e8dcc2] bg-[#fff7e4] px-4 py-3 text-xs font-bold uppercase tracking-[0.08em] text-[#6f5702]";
-export const adminTdClass = "border-b border-[#f0e5cf] px-4 py-3 align-middle text-[#2d250d]";
+export function AdminDesktopTable({ children, className = "" }) {
+  return <div className={`hidden overflow-x-auto md:block ${className}`}>{children}</div>;
+}
+
+export function AdminMobileList({ children, className = "" }) {
+  return <div className={`grid gap-3 p-4 md:hidden ${className}`}>{children}</div>;
+}
+
+export function AdminMobileCard({ children, className = "" }) {
+  return (
+    <article className={`rounded-lg border border-[#f0e5cf] bg-[#fffdf8] p-4 ${className}`}>
+      {children}
+    </article>
+  );
+}
+
+export const adminTableClass = "w-full min-w-[640px] text-left text-sm lg:min-w-[760px]";
+export const adminThClass = "border-b border-[#e8dcc2] bg-[#fff7e4] px-3 py-3 text-xs font-bold uppercase tracking-[0.08em] text-[#6f5702] lg:px-4";
+export const adminTdClass = "border-b border-[#f0e5cf] px-3 py-3 align-middle text-[#2d250d] lg:px-4";
 
 export function AdminModal({ open, onClose, title, children, size = "md" }) {
   const titleId = useId();
