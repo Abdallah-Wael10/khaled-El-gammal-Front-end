@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import vasa from "../Nav1/images/vasa.png";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { scaleTap } from "@/app/lib/motion";
@@ -13,11 +12,13 @@ const Card = ({ image, title, price, description, discountPrice, inStock, stock,
   const isOutOfStock = !inStock || Number(stock) === 0;
   const discounted = hasDiscount(discountPrice);
   const sellingPrice = getSellingPrice(price, discountPrice);
-  const [imgSrc, setImgSrc] = useState(image || vasa);
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
-    setImgSrc(image || vasa);
+    setImageFailed(false);
   }, [image]);
+
+  const showImage = Boolean(image) && !imageFailed;
 
   return (
     <motion.div
@@ -45,17 +46,20 @@ const Card = ({ image, title, price, description, discountPrice, inStock, stock,
           </div>
         )}
 
-        <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-[#FFFDF7]">
-          <Image
-            src={imgSrc}
-            alt={title || "Product"}
-            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-            width={400}
-            height={300}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
-            loading="lazy"
-            onError={() => setImgSrc(vasa)}
-          />
+        <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-white">
+          {showImage ? (
+            <Image
+              src={image}
+              alt={title || "Product"}
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              width={400}
+              height={300}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
+              loading="lazy"
+              unoptimized
+              onError={() => setImageFailed(true)}
+            />
+          ) : null}
           {!isOutOfStock && (
             <span className="absolute bottom-2.5 right-2.5 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-[#6f5702] shadow-sm ring-1 ring-[#ead9a5]">
               {stock} in stock
@@ -64,7 +68,6 @@ const Card = ({ image, title, price, description, discountPrice, inStock, stock,
         </div>
 
         <div className="flex flex-1 flex-col px-4 pb-0 pt-3.5">
-
           <h2 className="mt-1.5 line-clamp-2 text-lg font-bold leading-snug text-[#211900]">
             {title || "Untitled product"}
           </h2>
